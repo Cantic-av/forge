@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>FORGE</title>
+<meta name="theme-color" content="#0B1220">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FORGE">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap');
+  :root{
+    --bg:#0B1220; --bg2:#0E1A2E; --card:#13213B; --cardHi:#18294A; --line:#26385a;
+    --gold:#C9A24A; --goldSoft:#E3C272; --text:#F3F0E7; --mut:#8B96AC; --green:#5FB890; --red:#D98C8C;
+    --safeT:env(safe-area-inset-top,0px); --safeB:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; padding:0;}
+  html,body{background:var(--bg); color:var(--text);
+    font-family:'Hanken Grotesk',ui-sans-serif,system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  body{min-height:100vh; min-height:100dvh;}
+  input{font-family:inherit;}
+  input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;}
+  input[type=number]{-moz-appearance:textfield;}
+  ::selection{background:var(--gold); color:var(--bg);}
+  button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+  svg{display:block;}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;}}
+
+  .wrap{max-width:480px; margin:0 auto; padding-bottom:32px;}
+  .wrap.session{padding-bottom:calc(96px + var(--safeB));}
+  .pad{padding-left:20px; padding-right:20px;}
+  .fade{animation:fadeUp .38s ease both;}
+  .row{display:flex; align-items:center;}
+  .between{justify-content:space-between;}
+  .mut{color:var(--mut);} .gold{color:var(--gold);} .goldS{color:var(--goldSoft);}
+  .xs{font-size:12px;} .sm{font-size:14px;} .lg{font-size:18px;} .xl{font-size:20px;}
+  .b6{font-weight:600;} .b7{font-weight:700;} .b8{font-weight:800;}
+  .up{text-transform:uppercase; letter-spacing:.08em;}
+  .tab{font-variant-numeric:tabular-nums;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:18px;}
+  .badge{border:1px solid var(--line); border-radius:8px; padding:2px 7px;}
+
+  /* header */
+  .top{padding-top:calc(28px + var(--safeT));}
+  .brand{display:flex; align-items:center; gap:9px;}
+  .brand h1{font-weight:800; letter-spacing:.14em; font-size:21px;}
+  .ghost{display:flex; align-items:center; gap:6px; background:var(--card);
+    border:1px solid var(--line); color:var(--mut); border-radius:12px; padding:8px 12px; font-size:12px;}
+
+  /* stats */
+  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:24px;}
+  .stat{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:12px;}
+  .stat .v{font-weight:800; font-size:20px;}
+
+  /* session cards */
+  .scard{width:100%; text-align:left; display:flex; align-items:center; justify-content:space-between;
+    background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; transition:.15s;}
+  .scard.hi{background:var(--cardHi); border-color:var(--gold);}
+  .chip{display:flex; align-items:center; justify-content:center; width:42px; height:42px;
+    border-radius:12px; background:var(--bg2); color:var(--gold); font-weight:800;}
+  .scard.hi .chip{background:var(--gold); color:var(--bg);}
+
+  .label{color:var(--mut); font-size:12px; text-transform:uppercase; letter-spacing:.08em; margin:24px 0 8px;}
+  .stack{display:flex; flex-direction:column; gap:12px;}
+
+  /* deload */
+  .deload{margin-top:16px; padding:16px; border-radius:18px; background:#2a1f10; border:1px solid var(--goldSoft);
+    display:flex; gap:12px; align-items:flex-start;}
+  .deload .btn{margin-top:10px; background:var(--goldSoft); color:var(--bg); font-weight:700;
+    border-radius:999px; padding:6px 14px; font-size:12px;}
+
+  /* session header */
+  .shead{position:sticky; top:0; z-index:30; background:var(--bg); border-bottom:1px solid var(--line);
+    padding:calc(24px + var(--safeT)) 20px 14px;}
+  .prog{margin-top:12px; height:6px; border-radius:999px; background:var(--bg2); overflow:hidden;}
+  .prog > i{display:block; height:100%; background:var(--gold); width:0%; transition:width .3s;}
+
+  /* exercise */
+  .ex{background:var(--card); border:1px solid var(--line); border-radius:18px; overflow:hidden;}
+  .ex .h{padding:16px 16px 12px;}
+  .ex h3{font-weight:700; font-size:14px; line-height:1.3;}
+  .restbtn{display:flex; align-items:center; gap:5px; font-size:12px; color:var(--mut);
+    border:1px solid var(--line); border-radius:999px; padding:3px 9px; margin-left:auto;}
+  .note{color:var(--mut); background:var(--bg2); font-size:12px; margin-top:8px; padding:10px; border-radius:10px; line-height:1.5;}
+  .setrow{display:flex; align-items:center; gap:8px; padding:10px 16px; border-top:1px solid var(--bg2);}
+  .field{display:flex; align-items:center; gap:4px; padding:6px 8px; border-radius:10px;
+    background:var(--bg2); border:1px solid var(--line); width:78px;}
+  .field input{background:transparent; color:var(--text); width:100%; outline:none; border:none;
+    font-weight:700; font-size:14px; font-variant-numeric:tabular-nums;}
+  .check{margin-left:auto; display:flex; align-items:center; justify-content:center; width:34px; height:34px;
+    border-radius:10px; background:var(--bg2); border:1px solid var(--line); color:var(--mut); transition:.15s;}
+  .check.done{background:var(--green); border-color:var(--green); color:#04130c;}
+
+  /* finish bar */
+  .finish{position:fixed; left:0; right:0; bottom:0; z-index:40; padding:12px 20px calc(12px + var(--safeB));
+    background:rgba(11,18,32,.94); border-top:1px solid var(--line); backdrop-filter:blur(8px);}
+  .finish .inner{max-width:480px; margin:0 auto;}
+  .finish button{width:100%; padding:14px; border-radius:16px; background:var(--gold); color:var(--bg);
+    font-weight:800; letter-spacing:.02em; font-size:14px;}
+
+  /* history */
+  .hentry{width:100%; text-align:left; display:flex; align-items:center; justify-content:space-between;
+    background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px;}
+  .chartbox{margin-top:24px; padding:16px; border-radius:18px; background:var(--card); border:1px solid var(--line);}
+
+  /* floating */
+  .pill{position:fixed; left:0; right:0; display:flex; justify-content:center; z-index:50;}
+  .pill .inner{display:flex; align-items:center; gap:12px; padding:8px 16px; border-radius:999px;
+    background:var(--cardHi); border:1px solid var(--line); box-shadow:0 8px 30px rgba(0,0,0,.45);}
+  .pill .t{font-weight:700; font-variant-numeric:tabular-nums; min-width:44px; font-size:14px;}
+  .pill .add{font-size:12px; color:var(--gold); border:1px solid var(--line); border-radius:999px; padding:4px 8px;}
+  #toast{position:fixed; left:0; right:0; bottom:calc(28px + var(--safeB)); display:flex; justify-content:center; z-index:60;}
+  #toast .inner{padding:8px 16px; border-radius:999px; background:var(--green); color:#04130c; font-weight:600; font-size:14px;}
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="pill" class="pill hidden"></div>
+  <div id="toast" class="hidden"></div>
+
+<script>
+/* ----------------------------------------------------------- program */
+const PROGRAM = {
+  A:{id:"A",name:"Haut du corps",tag:"Upper",groups:"Pecs · Dos · Épaules · Bras",ex:[
+    {n:"Développé incliné haltères",s:4,r:"8–10",rest:"90 s",note:"Haltères = trajectoire libre, épaule gauche protégée. Ne descends pas les coudes sous la ligne du torse."},
+    {n:"Tirage vertical poitrine",s:4,r:"8–10",rest:"90 s",note:"Prise large. Superset possible avec le développé incliné."},
+    {n:"Développé machine convergente",s:3,r:"10–12",rest:"75 s",note:"Machine = sûre pour l'épaule, tu peux pousser près de l'échec."},
+    {n:"Rowing buste soutenu",s:3,r:"10–12",rest:"75 s",note:"Buste SOUTENU obligatoire — jamais buste penché barre libre (dos)."},
+    {n:"Curl barre EZ",s:3,r:"10–12",rest:"60 s",note:"Point faible → on charge sérieusement."},
+    {n:"Extension triceps poulie",s:3,r:"10–12",rest:"60 s",note:"Superset possible avec le curl."},
+    {n:"Crunch à la poulie",s:3,r:"12–15",rest:"45 s",note:"Abdos — point faible, présent à chaque séance."},
+  ]},
+  B:{id:"B",name:"Bas du corps",tag:"Lower",groups:"Quadri · Ischios · Mollets · Abdos",ex:[
+    {n:"Presse à cuisses",s:4,r:"10–12",rest:"2 min",note:"Ton mouvement préféré, et le plus sûr pour le dos : le dossier soutient le lombaire."},
+    {n:"Hack squat machine",s:3,r:"10–12",rest:"2 min",note:"Remplace le squat barre. Jamais barre libre lourde."},
+    {n:"Leg curl (allongé ou assis)",s:4,r:"10–12",rest:"90 s",note:"Ischios sans deadlift ni soulevé roumain — indispensable vu ton dos."},
+    {n:"Extension mollets",s:4,r:"12–15",rest:"45 s",note:"Amplitude complète, pause en bas."},
+    {n:"Face pull",s:3,r:"15",rest:"45 s",note:"Santé épaule gauche + arrière d'épaule et trapèzes. À garder à vie."},
+    {n:"Relevés de jambes + planche",s:3,r:"12–15",rest:"45 s",note:"Abdos. Pas de crunch lesté lourd ici (dos)."},
+  ]},
+  C:{id:"C",name:"Full body",tag:"Rappel",groups:"Corps entier + pecs/biceps",ex:[
+    {n:"Presse à cuisses",s:3,r:"12",rest:"90 s",note:"Rappel jambes."},
+    {n:"Rowing machine assise",s:3,r:"10–12",rest:"75 s",note:"Dos neutre, gainé."},
+    {n:"Développé couché machine",s:4,r:"10–12",rest:"75 s",note:"2ᵉ dose pecs — point faible."},
+    {n:"Curl incliné haltères",s:4,r:"10–12",rest:"60 s",note:"2ᵉ dose biceps — point faible. Superset possible avec le développé."},
+    {n:"Élévations latérales poulie",s:3,r:"12–15",rest:"45 s",note:"Léger, prudence épaule gauche."},
+    {n:"Crunch + obliques",s:3,r:"15",rest:"45 s",note:"Abdos."},
+  ]},
+};
+const ORDER=["A","B","C"];
+
+/* ----------------------------------------------------------- storage */
+const KL="forge_logs", KD="forge_deload", KA="forge_active";
+const load=(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}};
+const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+
+let logs=load(KL,[]);
+let deload=load(KD,0);
+let S={view:"home", active:load(KA,null), detail:null, rest:null, restTimer:null};
+if(S.active) S.view="session";
+
+/* ----------------------------------------------------------- helpers */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const parseRest=s=>s&&s.includes("min")?parseInt(s)*60:(parseInt(s)||60);
+const fmtDate=iso=>new Date(iso).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"});
+const mmss=s=>Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+const num=v=>parseFloat(String(v).replace(",","."));
+function lastPerf(name){
+  for(let i=logs.length-1;i>=0;i--){
+    const e=logs[i].exercises.find(x=>x.n===name && x.sets.length);
+    if(e) return e.sets;
+  }
+  return null;
+}
+const fmtSets=sets=>sets.map(s=>s.weight+"kg × "+s.reps).join("  ·  ");
+
+/* icons (stroke) */
+const sv=(p,fill)=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="${fill||"none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const I={
+  dumbbell:c=>`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round"><line x1="4" y1="8" x2="4" y2="16"/><line x1="20" y1="8" x2="20" y2="16"/><line x1="4" y1="12" x2="20" y2="12" stroke-width="2"/></svg>`,
+  cal:c=>`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>`,
+  flame:c=>`<svg width="15" height="15" viewBox="0 0 24 24" fill="${c}" stroke="none"><path d="M12 2c1 3-1 4-2 6s-1 4 2 4c2 0 2-2 2-2 2 2 2 4 1 6 4-1 5-5 4-8-1-2-3-3-4-6-1 1-2 2-3 1 0-3-1-4-2-1z"/></svg>`,
+  rotate:c=>`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 8 16 8"/></svg>`,
+  clock:c=>`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>`,
+  play:c=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="${c}" stroke="none"><polygon points="7 4 20 12 7 20"/></svg>`,
+  cl:c=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>`,
+  cr:c=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>`,
+  check:c=>`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  info:c=>`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="16" x2="12" y2="11"/><circle cx="12" cy="8" r=".6" fill="${c}"/></svg>`,
+  timer:c=>`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><line x1="12" y1="13" x2="12" y2="9"/><line x1="9" y1="2" x2="15" y2="2"/></svg>`,
+  x:c=>`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+};
+const css=getComputedStyle(document.documentElement);
+const C=n=>css.getPropertyValue(n).trim();
+
+/* ----------------------------------------------------------- derived */
+function suggested(){ return logs.length ? ORDER[(ORDER.indexOf(logs[logs.length-1].sessionId)+1)%3] : "A"; }
+function sinceDeload(){ return logs.length - deload; }
+function weekCount(){ return logs.filter(l=>Date.now()-new Date(l.date).getTime()<7*864e5).length; }
+
+/* ----------------------------------------------------------- render */
+const app=document.getElementById("app");
+function render(){
+  if(S.view==="home") app.innerHTML=viewHome();
+  else if(S.view==="session") app.innerHTML=viewSession();
+  else if(S.view==="history") app.innerHTML=viewHistory();
+  else if(S.view==="detail") app.innerHTML=viewDetail();
+  window.scrollTo(0,0);
+}
+
+function viewHome(){
+  const sug=suggested(), due=sinceDeload()>=21;
+  const others=ORDER.filter(id=>id!==sug);
+  return `<div class="wrap"><div class="pad top fade">
+    <div class="row between">
+      <div>
+        <div class="brand">${I.dumbbell(C("--gold"))}<h1>FORGE</h1></div>
+        <p class="mut xs" style="margin-top:5px; letter-spacing:.02em;">Recomposition · Haut / Bas / Full</p>
+      </div>
+      <button class="ghost" data-act="history">${I.clock(C("--mut"))} Historique</button>
+    </div>
+
+    <div class="stats">
+      ${stat(I.flame(C("--gold")),logs.length,"séances")}
+      ${stat(I.cal(C("--gold")),weekCount(),"cette semaine")}
+      ${stat(I.rotate(C("--gold")),sinceDeload(),"avant deload")}
+    </div>
+
+    ${due?`<div class="deload">${I.rotate(C("--goldSoft"))}
+      <div style="flex:1">
+        <p class="b7 goldS sm">Semaine de deload conseillée</p>
+        <p class="mut xs" style="margin-top:4px; line-height:1.5;">~7 semaines d'affilée. Charges −40 % ou volume divisé par deux pendant une semaine. Récup obligatoire à 45 ans + thyroïde.</p>
+        <button class="btn" data-act="deload">Deload effectué</button>
+      </div></div>`:""}
+
+    <p class="label">Prochaine séance suggérée</p>
+    ${scard(PROGRAM[sug],true)}
+    <p class="label">Toutes les séances</p>
+    <div class="stack">${others.map(id=>scard(PROGRAM[id],false)).join("")}</div>
+
+    <p class="mut xs" style="margin-top:32px; line-height:1.5; text-align:center; opacity:.7;">
+      Données enregistrées sur cet appareil. Tes charges précédentes sont rappelées pour piloter la progression.
+    </p>
+  </div></div>`;
+}
+const stat=(ic,v,l)=>`<div class="stat"><div class="row between">${ic}<span class="v tab">${v}</span></div><p class="mut xs" style="margin-top:4px">${l}</p></div>`;
+function scard(s,hi){
+  return `<button class="scard ${hi?"hi":""}" data-act="start" data-id="${s.id}">
+    <div class="row" style="gap:12px">
+      <div class="chip">${s.id}</div>
+      <div>
+        <div class="row" style="gap:8px"><span class="b7 sm">${s.name}</span><span class="badge mut xs">${s.tag}</span></div>
+        <p class="mut xs" style="margin-top:3px">${s.groups}</p>
+      </div>
+    </div>
+    ${hi?I.play(C("--gold")):I.cr(C("--mut"))}
+  </button>`;
+}
+
+function viewSession(){
+  const s=PROGRAM[S.active.sessionId];
+  let total=0,done=0;
+  S.active.sets.forEach(rows=>rows.forEach(r=>{total++; if(r.done)done++;}));
+  const exHtml=s.ex.map((ex,ei)=>{
+    const prev=lastPerf(ex.n);
+    const rows=S.active.sets[ei].map((row,si)=>`
+      <div class="setrow">
+        <span class="mut xs" style="width:18px">${si+1}</span>
+        <div class="field"><input class="tab" inputmode="decimal" data-ex="${ei}" data-set="${si}" data-field="weight" value="${esc(row.weight)}" placeholder="—"><span class="mut xs">kg</span></div>
+        <span class="mut xs">×</span>
+        <div class="field"><input class="tab" inputmode="numeric" data-ex="${ei}" data-set="${si}" data-field="reps" value="${esc(row.reps)}" placeholder="—"><span class="mut xs">reps</span></div>
+        <button class="check ${row.done?"done":""}" id="ck-${ei}-${si}" data-act="toggle" data-ex="${ei}" data-set="${si}">${I.check(row.done?"#04130c":C("--mut"))}</button>
+      </div>`).join("");
+    return `<div class="ex">
+      <div class="h">
+        <div class="row" style="align-items:flex-start; gap:8px">
+          <h3 style="flex:1">${esc(ex.n)}</h3>
+          <button data-act="note" data-ex="${ei}" style="flex:none; margin-top:2px">${I.info(C("--mut"))}</button>
+        </div>
+        <div class="row" style="gap:8px; margin-top:6px; flex-wrap:wrap">
+          <span class="goldS b6 xs">${ex.s} × ${ex.r}</span>
+          <span class="mut xs">· repos ${ex.rest}</span>
+          <button class="restbtn" data-act="rest" data-sec="${parseRest(ex.rest)}">${I.timer(C("--mut"))} repos</button>
+        </div>
+        <p class="note hidden" id="note-${ei}">${esc(ex.note)}</p>
+        ${prev?`<p class="mut xs" style="margin-top:8px"><span style="color:var(--green)">Dernière fois :</span> ${esc(fmtSets(prev))}</p>`:""}
+      </div>
+      <div style="border-top:1px solid var(--line)">${rows}</div>
+    </div>`;
+  }).join("");
+
+  return `<div class="wrap session">
+    <div class="shead">
+      <div class="row between">
+        <button class="row mut sm" style="gap:4px" data-act="quit">${I.cl(C("--mut"))} Quitter</button>
+        <span class="mut xs tab" id="count">${done}/${total} séries</span>
+      </div>
+      <div class="row" style="gap:12px; margin-top:12px">
+        <div class="chip" style="background:var(--gold); color:var(--bg)">${s.id}</div>
+        <div><h2 class="b8 lg" style="line-height:1">${s.name}</h2><p class="mut xs" style="margin-top:4px">${s.tag} · ${s.groups}</p></div>
+      </div>
+      <div class="prog"><i id="prog" style="width:${total?Math.round(done/total*100):0}%"></i></div>
+    </div>
+    <div class="pad fade" style="padding-top:16px"><div class="stack">${exHtml}</div></div>
+    <div class="finish"><div class="inner"><button data-act="finish">Terminer la séance</button></div></div>
+  </div>`;
+}
+
+function viewHistory(){
+  const vols=logs.slice(-12).map(l=>Math.round(l.volume));
+  const list=[...logs].reverse().map(l=>`
+    <button class="hentry" data-act="open" data-id="${l.id}">
+      <div class="row" style="gap:12px">
+        <div class="chip">${l.sessionId}</div>
+        <div><span class="b7 sm">${PROGRAM[l.sessionId].name}</span>
+          <p class="mut xs" style="margin-top:3px; text-transform:capitalize">${fmtDate(l.date)} · ${l.exercises.length} exos</p></div>
+      </div>
+      <div style="text-align:right"><span class="b7 goldS sm tab">${Math.round(l.volume).toLocaleString("fr-FR")}</span><p class="mut xs">kg</p></div>
+    </button>`).join("");
+  return `<div class="wrap"><div class="pad top fade">
+    <div class="row between">
+      <button class="row mut sm" style="gap:4px" data-act="home">${I.cl(C("--mut"))} Retour</button>
+      <h2 class="b8" style="font-size:15px; letter-spacing:.06em">HISTORIQUE</h2>
+      <span style="width:56px"></span>
+    </div>
+    ${logs.length===0?`<p class="mut sm" style="text-align:center; margin-top:64px">Aucune séance enregistrée pour l'instant.</p>`:""}
+    ${vols.length>=2?`<div class="chartbox"><p class="mut xs up" style="margin-bottom:10px">Volume par séance (kg soulevés)</p>${chart(vols)}</div>`:""}
+    <div class="stack" style="margin-top:20px">${list}</div>
+    ${logs.length>0?`<button data-act="reset" style="display:block; margin:32px auto 0; color:var(--red); font-size:12px">Réinitialiser les données</button>`:""}
+  </div></div>`;
+}
+function chart(vols){
+  const W=320,H=132,pL=10,pR=10,pT=12,pB=20, iW=W-pL-pR, iH=H-pT-pB;
+  const max=Math.max(...vols,1), n=vols.length;
+  const X=i=>n===1?pL+iW/2:pL+i/(n-1)*iW;
+  const Y=v=>pT+(1-v/max)*iH;
+  const pts=vols.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ");
+  const area=`${pL},${pT+iH} ${pts} ${pL+iW},${pT+iH}`;
+  const dots=vols.map((v,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="2.6" fill="${C("--gold")}"/>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="none" style="display:block">
+    <line x1="${pL}" y1="${pT+iH}" x2="${pL+iW}" y2="${pT+iH}" stroke="${C("--line")}" stroke-width="1"/>
+    <polygon points="${area}" fill="${C("--gold")}" opacity="0.08"/>
+    <polyline points="${pts}" fill="none" stroke="${C("--gold")}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+    <text x="${pL}" y="${pT-2}" fill="${C("--mut")}" font-size="9">${max.toLocaleString("fr-FR")}</text>
+  </svg>`;
+}
+
+function viewDetail(){
+  const e=S.detail;
+  const body=e.exercises.map(x=>`<div class="card" style="padding:16px">
+    <h3 class="b7 sm">${esc(x.n)}</h3>
+    <div class="row" style="gap:8px; flex-wrap:wrap; margin-top:8px">
+      ${x.sets.map(s=>`<span class="xs" style="background:var(--bg2); color:var(--goldSoft); padding:4px 8px; border-radius:10px; font-variant-numeric:tabular-nums">${s.weight}kg × ${s.reps}</span>`).join("")}
+    </div></div>`).join("");
+  return `<div class="wrap"><div class="pad top fade">
+    <button class="row mut sm" style="gap:4px" data-act="history">${I.cl(C("--mut"))} Historique</button>
+    <div class="row" style="gap:12px; margin-top:16px">
+      <div class="chip" style="background:var(--gold); color:var(--bg)">${e.sessionId}</div>
+      <div><h2 class="b8 lg" style="line-height:1">${PROGRAM[e.sessionId].name}</h2>
+        <p class="mut xs" style="margin-top:4px; text-transform:capitalize">${fmtDate(e.date)} · ${Math.round(e.volume).toLocaleString("fr-FR")} kg</p></div>
+    </div>
+    <div class="stack" style="margin-top:20px">${body}</div>
+  </div></div>`;
+}
+
+/* ----------------------------------------------------------- actions */
+function startSession(id){
+  const sets=PROGRAM[id].ex.map(ex=>{
+    const prev=lastPerf(ex.n);
+    return Array.from({length:ex.s},(_,i)=>({
+      weight: prev?String((prev[i]||prev[0]).weight):"", reps:"", done:false
+    }));
+  });
+  S.active={sessionId:id, startedAt:new Date().toISOString(), sets};
+  save(KA,S.active); S.view="session"; render();
+}
+function updateProgress(){
+  let total=0,done=0;
+  S.active.sets.forEach(rows=>rows.forEach(r=>{total++; if(r.done)done++;}));
+  const p=document.getElementById("prog"); if(p) p.style.width=(total?Math.round(done/total*100):0)+"%";
+  const c=document.getElementById("count"); if(c) c.textContent=done+"/"+total+" séries";
+}
+function finishSession(){
+  const s=PROGRAM[S.active.sessionId];
+  const exercises=s.ex.map((ex,ei)=>({
+    n:ex.n,
+    sets:S.active.sets[ei].filter(r=>r.weight!==""&&r.reps!=="").map(r=>({weight:num(r.weight),reps:parseInt(r.reps)}))
+  })).filter(e=>e.sets.length);
+  const volume=exercises.reduce((t,e)=>t+e.sets.reduce((a,x)=>a+x.weight*x.reps,0),0);
+  logs.push({id:Date.now(),date:new Date().toISOString(),sessionId:S.active.sessionId,exercises,volume});
+  save(KL,logs);
+  S.active=null; save(KA,null); S.view="home"; render(); toast("Séance enregistrée ✓");
+}
+function doDeload(){ deload=logs.length; save(KD,deload); render(); toast("Deload validé — compteur remis à zéro"); }
+function resetAll(){
+  if(!confirm("Effacer tout l'historique et les charges enregistrées ? Action irréversible.")) return;
+  logs=[]; deload=0; S.active=null; save(KL,logs); save(KD,0); save(KA,null); S.view="home"; render(); toast("Données réinitialisées");
+}
+
+/* rest timer */
+const pill=document.getElementById("pill");
+function startRest(sec){ S.rest=sec; showPill(); if(S.restTimer)clearInterval(S.restTimer);
+  S.restTimer=setInterval(()=>{ S.rest--; if(S.rest<=0){stopRest();}else showPill(); },1000); }
+function stopRest(){ if(S.restTimer)clearInterval(S.restTimer); S.restTimer=null; S.rest=null; pill.classList.add("hidden"); }
+function showPill(){
+  const bottom=(S.view==="session"?84:20)+parseInt(C("--safeB")||0);
+  pill.style.bottom=bottom+"px";
+  pill.innerHTML=`<div class="inner">${I.timer(C("--gold"))}<span class="t">${mmss(S.rest)}</span>
+    <button class="add" data-act="rest-add">+30s</button><button data-act="rest-close">${I.x(C("--mut"))}</button></div>`;
+  pill.classList.remove("hidden");
+}
+
+/* toast */
+let toastT=null;
+function toast(m){ const t=document.getElementById("toast"); t.innerHTML=`<div class="inner">${m}</div>`; t.classList.remove("hidden");
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.add("hidden"),2200); }
+
+/* ----------------------------------------------------------- events */
+app.addEventListener("input",e=>{
+  const t=e.target; if(!t.dataset||t.dataset.field===undefined) return;
+  S.active.sets[+t.dataset.ex][+t.dataset.set][t.dataset.field]=t.value;
+});
+app.addEventListener("change",e=>{ if(e.target.dataset&&e.target.dataset.field!==undefined) save(KA,S.active); });
+app.addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  const a=b.dataset.act;
+  if(a==="history"){S.view="history";render();}
+  else if(a==="home"){S.view="home";render();}
+  else if(a==="start"){startSession(b.dataset.id);}
+  else if(a==="deload"){doDeload();}
+  else if(a==="quit"){save(KA,S.active);S.active=null;save(KA,null);S.view="home";render();}
+  else if(a==="finish"){finishSession();}
+  else if(a==="reset"){resetAll();}
+  else if(a==="open"){S.detail=logs.find(l=>l.id==b.dataset.id);S.view="detail";render();}
+  else if(a==="note"){const n=document.getElementById("note-"+b.dataset.ex); if(n)n.classList.toggle("hidden");}
+  else if(a==="rest"){startRest(+b.dataset.sec);}
+  else if(a==="toggle"){
+    const ei=+b.dataset.ex, si=+b.dataset.set, row=S.active.sets[ei][si];
+    row.done=!row.done; save(KA,S.active);
+    b.classList.toggle("done",row.done);
+    b.innerHTML=I.check(row.done?"#04130c":C("--mut"));
+    updateProgress();
+  }
+});
+pill.addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  if(b.dataset.act==="rest-add"){S.rest+=30;showPill();}
+  else if(b.dataset.act==="rest-close"){stopRest();}
+});
+
+/* service worker */
+if("serviceWorker" in navigator){ window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{})); }
+
+render();
+</script>
+</body>
+</html>
