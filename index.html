@@ -199,8 +199,25 @@ const FOOD_DEFAULTS=[
   {id:"mozzarella",name:"Mozzarella",unit:"30 g",kcal:80,p:6,c:1,f:6},
   {id:"feta",name:"Fêta",unit:"30 g",kcal:80,p:4,c:0.5,f:6.5},
   {id:"croissant",name:"Croissant",unit:"unité ~60 g",kcal:250,p:5,c:26,f:14},
-  {id:"huile_olive",name:"Huile d'olive",unit:"c. à soupe ~10 g",kcal:90,p:0,c:0,f:10}];
-const FOOD_SEED_VERSION=3;
+  {id:"huile_olive",name:"Huile d'olive",unit:"c. à soupe ~10 g",kcal:90,p:0,c:0,f:10},
+  {id:"miel",name:"Miel",unit:"1 cc",kcal:23,p:0,c:6,f:0},
+  {id:"fromage_blanc",name:"Formage blanc",unit:"100 gr",kcal:47,p:6,c:4.5,f:0.5},
+  {id:"cordon_bleu",name:"Cordon Bleu",unit:"100 gr",kcal:250,p:20,c:6,f:16},
+  {id:"magret_canard",name:"Magret de Canard sans peau",unit:"100gr",kcal:200,p:24,c:0,f:10},
+  {id:"pizza_paysanne",name:"Pizza paysanne",unit:"450gr",kcal:1250,p:50,c:130,f:45},
+  {id:"escalope_milanaise",name:"Escalope Milanaise",unit:"200gr",kcal:500,p:45,c:20,f:25},
+  {id:"soupe_miso",name:"Soupe Miso",unit:"1 dose",kcal:50,p:4,c:5,f:2},
+  {id:"udon_poulet",name:"Nouilles Udon Poulet Croustillant",unit:"1/4 Plat",kcal:200,p:10,c:23,f:5},
+  {id:"barre_on",name:"Barre Protéine ON",unit:"1 barre",kcal:196,p:21,c:18,f:5.5},
+  {id:"liegeois",name:"Liégeois",unit:"100 gr",kcal:147,p:3,c:17.7,f:7},
+  {id:"salade_cesar",name:"Salade Cesar",unit:"Plat restaurant",kcal:800,p:45,c:30,f:55},
+  {id:"tarte_tomate_ricotta",name:"Tarte Tomates Ricotta",unit:"Demi tarte",kcal:900,p:30,c:70,f:60},
+  {id:"nuggets",name:"Nuggets",unit:"10",kcal:410,p:32,c:34,f:16},
+  {id:"vache_qui_rit",name:"Vache qui rit",unit:"Portion",kcal:55,p:3,c:1,f:5},
+  {id:"acras_morue",name:"Acras de Morue",unit:"Barquette 280 Gr",kcal:550,p:26,c:76,f:17},
+  {id:"knacki",name:"Knacki",unit:"1",kcal:95,p:4.2,c:0.7,f:8.4},
+  {id:"taboule",name:"Taboulé",unit:"200 gr",kcal:320,p:6,c:44,f:14}];
+const FOOD_SEED_VERSION=4;
 const SUPP=[
   {g:"Matin · à jeun",items:[{id:"levo",n:"Médicament du matin",note:"30 min avant le petit-déjeuner. Loin du café, du calcium et du magnésium — ils bloquent l'absorption."}]},
   {g:"Au repas · matin ou midi",items:[
@@ -223,10 +240,11 @@ const MEASURE_DEFAULTS=[
 const KL="forge_logs",KD="forge_deload",KA="forge_active",KT="forge_nutri_targets",KN="forge_nutri_log",KF="forge_foods",KSU="forge_supps_checked",KM="forge_measures",KSV="forge_foods_seedv";
 const load=(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}};
 const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+const normName=s=>String(s||"").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,"").replace(/\s+/g," ").trim();
 let logs=load(KL,[]),deload=load(KD,0),targets=load(KT,{...TARGET_DEFAULT}),nutriLog=load(KN,{});
 let foods=load(KF,null),foodSeed=load(KSV,foods?1:0);
 if(!foods){foods=FOOD_DEFAULTS.map(f=>({...f}));save(KF,foods);save(KSV,FOOD_SEED_VERSION);}
-else if(foodSeed<FOOD_SEED_VERSION){const have=new Set(foods.map(f=>f.id));FOOD_DEFAULTS.forEach(d=>{if(!have.has(d.id))foods.push({...d});});save(KF,foods);save(KSV,FOOD_SEED_VERSION);}
+else if(foodSeed<FOOD_SEED_VERSION){const haveId=new Set(foods.map(f=>f.id)),haveName=new Set(foods.map(f=>normName(f.name)));FOOD_DEFAULTS.forEach(d=>{if(!haveId.has(d.id)&&!haveName.has(normName(d.name)))foods.push({...d});});save(KF,foods);save(KSV,FOOD_SEED_VERSION);}
 let measures=load(KM,null); if(!measures){measures=MEASURE_DEFAULTS.map(m=>({...m,history:[]}));save(KM,measures);}
 let S={tab:"train",trainView:"home",active:load(KA,null),detail:null,nutriSub:"meals",nutriDate:isoToday(),pickFood:null,pickQty:1,foodsOpen:false,measureSel:null,measureView:"list",rest:null,restTimer:null};
 if(S.active){S.tab="train";S.trainView="session";}
