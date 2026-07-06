@@ -263,6 +263,8 @@ const I={
   meal:c=>'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v8a2 2 0 0 0 4 0V3M7 3v18"/><path d="M17 3c-2 0-3 2-3 5s1 4 3 4v9"/></svg>',
   ruler:c=>'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="1.5"/><line x1="7" y1="8" x2="7" y2="11"/><line x1="11" y1="8" x2="11" y2="12"/><line x1="15" y1="8" x2="15" y2="11"/><line x1="19" y1="8" x2="19" y2="12"/></svg>',
   camera:c=>'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h3l2-2h8l2 2h3v12H3z"/><circle cx="12" cy="13" r="3.2"/></svg>',
+  dl:c=>'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  ul:c=>'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
 };
 const css=getComputedStyle(document.documentElement);
 const C=n=>css.getPropertyValue(n).trim();
@@ -300,7 +302,12 @@ function viewTrainHome(){
     '<div class="stats">'+stat(I.flame(C("--gold")),logs.length,"séances")+stat(I.cal(C("--gold")),weekCount(),"cette semaine")+stat(I.rotate(C("--gold")),sinceDeload(),"avant deload")+'</div>'+
     (due?'<div class="deload">'+I.rotate(C("--goldSoft"))+'<div style="flex:1"><p class="b7 goldS sm">Semaine de deload conseillée</p><p class="mut xs" style="margin-top:4px;line-height:1.5;">~7 semaines d\'affilée. Charges −40 % ou volume divisé par deux pendant une semaine. Récup obligatoire à l'âge + santé.</p><button class="btn" data-act="deload">Deload effectué</button></div></div>':"")+
     '<p class="label">Prochaine séance suggérée</p>'+scard(PROGRAM[sug],true)+
-    '<p class="label">Toutes les séances</p><div class="stack">'+others.map(id=>scard(PROGRAM[id],false)).join("")+'</div></div></div>';
+    '<p class="label">Toutes les séances</p><div class="stack">'+others.map(id=>scard(PROGRAM[id],false)).join("")+'</div>'+
+    '<p class="label">Données</p><div class="card" style="padding:18px"><div class="row" style="gap:11px">'+
+      '<button class="ghost" style="flex:1;justify-content:center" data-act="export-data">'+I.dl(C("--goldSoft"))+' Exporter</button>'+
+      '<button class="ghost" style="flex:1;justify-content:center" data-act="import-data">'+I.ul(C("--mut"))+' Importer</button>'+
+    '</div><p class="caveat" style="margin-top:14px">Tes données ne vivent que sur cet iPhone. Exporte un fichier JSON régulièrement (AirDrop, Fichiers, iCloud) — c\'est ta seule protection contre une réinstall, un nettoyage Safari ou un changement d\'appareil. L\'import remplace tout l\'état actuel.</p></div>'+
+    '</div></div>';
 }
 const stat=(ic,v,l)=>'<div class="stat"><div class="row between">'+ic+'<span class="v tab">'+v+'</span></div><p class="mut xs" style="margin-top:4px">'+l+'</p></div>';
 function scard(s,hi){return '<button class="scard '+(hi?"hi":"")+'" data-act="start" data-id="'+s.id+'"><div class="row" style="gap:12px"><div class="chip">'+s.id+'</div><div><div class="row" style="gap:8px"><span class="b7 sm">'+s.name+'</span><span class="badge mut xs">'+s.tag+'</span></div><p class="mut xs" style="margin-top:3px">'+s.groups+'</p></div></div>'+(hi?I.play(C("--gold")):I.cr(C("--mut")))+'</button>';}
@@ -440,6 +447,41 @@ function stopRest(){if(S.restTimer)clearInterval(S.restTimer);S.restTimer=null;S
 function showPill(){const inSession=(S.tab==="train"&&S.trainView==="session");const bottom=(inSession?100:104)+parseInt(C("--safeB")||0);pill.style.bottom=bottom+"px";pill.innerHTML='<div class="inner">'+I.timer(C("--gold"))+'<span class="t">'+mmss(S.rest)+'</span><button class="add" data-act="rest-add">+30s</button><button data-act="rest-close">'+I.x(C("--mut"))+'</button></div>';pill.classList.remove("hidden");}
 let toastT=null;
 function toast(m){const t=document.getElementById("toast");t.innerHTML='<div class="inner">'+m+'</div>';t.classList.remove("hidden");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.add("hidden"),2200);}
+/* ===== backup (export / import JSON) ===== */
+const BACKUP_KEYS=[KL,KD,KA,KT,KN,KF,KSU,KM,KSV];
+function exportData(){
+  const data={};BACKUP_KEYS.forEach(k=>{const v=localStorage.getItem(k);if(v!==null)data[k]=v;});
+  const payload={app:"FORGE",schema:1,exportedAt:new Date().toISOString(),data};
+  const json=JSON.stringify(payload,null,2),fname="forge-backup-"+isoToday()+".json";
+  const blob=new Blob([json],{type:"application/json"});
+  try{
+    const file=new File([blob],fname,{type:"application/json"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:"Sauvegarde FORGE"}).then(()=>toast("Sauvegarde exportée ✓")).catch(()=>{});
+      return;
+    }
+  }catch(e){}
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=fname;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);toast("Sauvegarde exportée ✓");
+}
+function importData(file){
+  const reader=new FileReader();
+  reader.onload=()=>{
+    let payload;try{payload=JSON.parse(reader.result);}catch(e){toast("Fichier illisible");return;}
+    if(!payload||payload.app!=="FORGE"||!payload.data){toast("Fichier FORGE invalide");return;}
+    const keys=Object.keys(payload.data).filter(k=>BACKUP_KEYS.includes(k));
+    if(!keys.length){toast("Aucune donnée FORGE dans ce fichier");return;}
+    if(!confirm("Remplacer tes données actuelles par cette sauvegarde ("+keys.length+" éléments) ? Ton état actuel sera écrasé.")) return;
+    keys.forEach(k=>{try{localStorage.setItem(k,typeof payload.data[k]==="string"?payload.data[k]:JSON.stringify(payload.data[k]));}catch(e){}});
+    toast("Sauvegarde importée ✓");setTimeout(()=>location.reload(),700);
+  };
+  reader.readAsText(file);
+}
+function pickImportFile(){
+  const inp=document.createElement("input");inp.type="file";inp.accept="application/json,.json";
+  inp.onchange=()=>{if(inp.files&&inp.files[0])importData(inp.files[0]);};inp.click();
+}
 /* ===== events: page ===== */
 app.addEventListener("input",e=>{const t=e.target;if(t.dataset&&t.dataset.field!==undefined)S.active.sets[+t.dataset.ex][+t.dataset.set][t.dataset.field]=t.value;});
 app.addEventListener("change",e=>{if(e.target.dataset&&e.target.dataset.field!==undefined)save(KA,S.active);});
@@ -474,6 +516,8 @@ app.addEventListener("click",e=>{
   if(a==="log-photo"){const m=measures.find(x=>x.id===S.measureSel),d=isoToday();m.history=(m.history||[]).filter(e=>e.date!==d).concat([{date:d}]);m.history.sort((x,y)=>x.date<y.date?-1:1);save(KM,measures);render();toast("Photos notées ✓");return;}
   if(a==="del-metric"){if(confirm("Supprimer cette mesure et son historique ?")){measures=measures.filter(x=>x.id!==b.dataset.id);save(KM,measures);S.measureView="list";S.measureSel=null;render();}return;}
   if(a==="open-addmetric"){modalAddMetric();return;}
+  if(a==="export-data"){exportData();return;}
+  if(a==="import-data"){pickImportFile();return;}
 });
 /* ===== events: modal ===== */
 modalEl.addEventListener("click",e=>{
