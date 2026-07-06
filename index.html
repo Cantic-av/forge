@@ -121,6 +121,10 @@
   .pill .inner{display:flex;align-items:center;gap:14px;padding:11px 19px;border-radius:999px;background:rgba(24,41,74,.82);border:1px solid var(--glassB);backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(170%);box-shadow:0 10px 34px rgba(0,0,0,.5);}
   .pill .t{font-weight:700;font-variant-numeric:tabular-nums;min-width:48px;font-size:16px;}
   .pill .add{font-size:13.5px;color:var(--gold);border:1px solid var(--line);border-radius:999px;padding:6px 11px;}
+  .pill .inner.done{background:rgba(20,64,46,.88);border-color:rgba(95,184,144,.55);animation:restPulse 1.15s ease-in-out infinite;}
+  .pill .inner.done .t{color:var(--green);}
+  .pill .inner.done .add{color:#04130c;background:var(--green);border-color:var(--green);font-weight:700;}
+  @keyframes restPulse{0%,100%{box-shadow:0 10px 34px rgba(0,0,0,.5);}50%{box-shadow:0 10px 34px rgba(0,0,0,.5),0 0 0 5px rgba(95,184,144,.22);}}
   #toast{position:fixed;left:0;right:0;bottom:calc(var(--nav) + var(--safeB) + 30px);display:flex;justify-content:center;z-index:90;}
   #toast .inner{padding:11px 19px;border-radius:999px;background:var(--green);color:#04130c;font-weight:600;font-size:15.5px;box-shadow:0 8px 24px rgba(0,0,0,.35);}
   .hidden{display:none;}
@@ -246,7 +250,7 @@ let foods=load(KF,null),foodSeed=load(KSV,foods?1:0);
 if(!foods){foods=FOOD_DEFAULTS.map(f=>({...f}));save(KF,foods);save(KSV,FOOD_SEED_VERSION);}
 else if(foodSeed<FOOD_SEED_VERSION){const haveId=new Set(foods.map(f=>f.id)),haveName=new Set(foods.map(f=>normName(f.name)));FOOD_DEFAULTS.forEach(d=>{if(!haveId.has(d.id)&&!haveName.has(normName(d.name)))foods.push({...d});});save(KF,foods);save(KSV,FOOD_SEED_VERSION);}
 let measures=load(KM,null); if(!measures){measures=MEASURE_DEFAULTS.map(m=>({...m,history:[]}));save(KM,measures);}
-let S={tab:"train",trainView:"home",active:load(KA,null),detail:null,nutriSub:"meals",nutriDate:isoToday(),pickFood:null,pickQty:1,foodsOpen:false,measureSel:null,measureView:"list",rest:null,restTimer:null};
+let S={tab:"train",trainView:"home",active:load(KA,null),detail:null,nutriSub:"meals",nutriDate:isoToday(),pickFood:null,pickQty:1,foodsOpen:false,measureSel:null,measureView:"list",restEnd:null,restDone:false,restTimer:null};
 if(S.active){S.tab="train";S.trainView="session";}
 /* ===== helpers ===== */
 function isoToday(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
@@ -460,9 +464,14 @@ function addLogged(food,qty){
   const arr=nutriLog[S.nutriDate]?[...nutriLog[S.nutriDate]]:[];arr.push(e);nutriLog[S.nutriDate]=arr;save(KN,nutriLog);
 }
 const pill=document.getElementById("pill");
-function startRest(sec){S.rest=sec;showPill();if(S.restTimer)clearInterval(S.restTimer);S.restTimer=setInterval(()=>{S.rest--;if(S.rest<=0)stopRest();else showPill();},1000);}
-function stopRest(){if(S.restTimer)clearInterval(S.restTimer);S.restTimer=null;S.rest=null;pill.classList.add("hidden");}
-function showPill(){const inSession=(S.tab==="train"&&S.trainView==="session");const bottom=(inSession?100:104)+parseInt(C("--safeB")||0);pill.style.bottom=bottom+"px";pill.innerHTML='<div class="inner">'+I.timer(C("--gold"))+'<span class="t">'+mmss(S.rest)+'</span><button class="add" data-act="rest-add">+30s</button><button data-act="rest-close">'+I.x(C("--mut"))+'</button></div>';pill.classList.remove("hidden");}
+let restAudio=null;
+function unlockAudio(){try{const AC=window.AudioContext||window.webkitAudioContext;if(AC){if(!restAudio)restAudio=new AC();if(restAudio.state==="suspended")restAudio.resume();}}catch(e){}}
+function beep(){try{const ac=restAudio;if(!ac)return;if(ac.state==="suspended")ac.resume();const t=ac.currentTime;for(let i=0;i<3;i++){const o=ac.createOscillator(),g=ac.createGain();o.type="sine";o.frequency.value=i===2?1175:880;o.connect(g);g.connect(ac.destination);const s=t+i*0.22;g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(0.4,s+0.02);g.gain.exponentialRampToValueAtTime(0.0001,s+0.18);o.start(s);o.stop(s+0.2);}}catch(e){}}
+function restRemaining(){return Math.max(0,Math.round((S.restEnd-Date.now())/1000));}
+function startRest(sec){unlockAudio();S.restEnd=Date.now()+sec*1000;S.restDone=false;showPill();if(S.restTimer)clearInterval(S.restTimer);S.restTimer=setInterval(tickRest,1000);}
+function tickRest(){if(S.restEnd==null)return;if(Date.now()>=S.restEnd){if(S.restTimer){clearInterval(S.restTimer);S.restTimer=null;}if(!S.restDone){S.restDone=true;beep();try{navigator.vibrate&&navigator.vibrate([200,100,200,100,200]);}catch(e){}}showPill();}else showPill();}
+function stopRest(){if(S.restTimer)clearInterval(S.restTimer);S.restTimer=null;S.restEnd=null;S.restDone=false;pill.classList.add("hidden");}
+function showPill(){const inSession=(S.tab==="train"&&S.trainView==="session");const bottom=(inSession?100:104)+parseInt(C("--safeB")||0);pill.style.bottom=bottom+"px";if(S.restDone){pill.innerHTML='<div class="inner done">'+I.check(C("--green"))+'<span class="t">Repos terminé</span><button class="add" data-act="rest-close">OK</button></div>';}else{pill.innerHTML='<div class="inner">'+I.timer(C("--gold"))+'<span class="t">'+mmss(restRemaining())+'</span><button class="add" data-act="rest-add">+30 s</button><button data-act="rest-close">'+I.x(C("--mut"))+'</button></div>';}pill.classList.remove("hidden");}
 let toastT=null;
 function toast(m){const t=document.getElementById("toast");t.innerHTML='<div class="inner">'+m+'</div>';t.classList.remove("hidden");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.add("hidden"),2200);}
 /* ===== backup (export / import JSON) ===== */
@@ -554,7 +563,8 @@ modalEl.addEventListener("click",e=>{
   if(a==="save-logm"){const m=measures.find(x=>x.id===S.measureSel),v=num(document.getElementById("m-val").value),d=document.getElementById("m-date").value||isoToday();if(v>0){m.history=(m.history||[]).filter(e=>e.date!==d).concat([{date:d,value:v}]);m.history.sort((x,y)=>x.date<y.date?-1:1);save(KM,measures);closeModal();render();toast("Mesure enregistrée ✓");}else closeModal();return;}
   if(a==="save-metric"){const name=(document.getElementById("nm-name").value||"").trim();if(name){measures.push({id:"m"+Date.now(),name,unit:(document.getElementById("nm-unit").value||"").trim(),freq:parseInt(document.getElementById("nm-freq").value)||14,history:[]});save(KM,measures);}closeModal();render();return;}
 });
-pill.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;if(b.dataset.act==="rest-add"){S.rest+=30;showPill();}else if(b.dataset.act==="rest-close")stopRest();});
+pill.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;if(a==="rest-add"){if(S.restEnd==null)return;S.restEnd+=30000;if(S.restDone){S.restDone=false;if(!S.restTimer)S.restTimer=setInterval(tickRest,1000);}showPill();}else if(a==="rest-close")stopRest();});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.restEnd!=null)tickRest();});
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}
 render();
 </script>
