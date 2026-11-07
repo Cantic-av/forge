@@ -65,7 +65,7 @@
   .stack{display:flex;flex-direction:column;gap:14px;}
   .deload{margin-top:20px;padding:19px;border-radius:24px;background:linear-gradient(180deg,rgba(227,194,114,.16),rgba(227,194,114,.05));border:1px solid rgba(227,194,114,.42);display:flex;gap:13px;align-items:flex-start;}
   .deload .btn{margin-top:12px;background:var(--goldSoft);color:#1a1407;font-weight:700;border-radius:999px;padding:9px 18px;font-size:13.5px;}
-  .shead{position:sticky;top:0;z-index:30;background:rgba(10,16,24,.72);border-bottom:1px solid var(--line);padding:calc(28px + var(--safeT)) 24px 15px;backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);}
+  .shead{position:sticky;top:0;z-index:30;background:rgba(10,16,24,.72);box-shadow:0 14px 22px -16px rgba(0,0,0,.7);padding:calc(28px + var(--safeT)) 24px 15px;backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);}
   .prog{margin-top:14px;height:8px;border-radius:999px;background:rgba(0,0,0,.25);overflow:hidden;}
   .prog>i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--goldSoft));width:0%;transition:width .35s;}
   .ex{background:var(--card);border:1px solid var(--glassB);border-radius:24px;overflow:hidden;box-shadow:0 12px 28px rgba(0,0,0,.26);}
@@ -104,8 +104,8 @@
   .sbox{flex:none;width:33px;height:33px;border-radius:11px;border:1px solid var(--line);background:rgba(0,0,0,.20);display:flex;align-items:center;justify-content:center;margin-top:1px;}
   .sbox.on{background:var(--green);border-color:var(--green);}
   .train-tag{font-size:11px;color:var(--goldSoft);border:1px solid var(--line);border-radius:7px;padding:2px 7px;margin-left:7px;vertical-align:middle;}
-  #modal.show{position:fixed;inset:0;z-index:80;display:flex;align-items:flex-end;justify-content:center;background:rgba(3,7,15,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
-  .sheet{width:100%;max-width:520px;background:rgba(18,28,46,.82);border:1px solid var(--glassB);border-bottom:none;border-radius:30px 30px 0 0;padding:22px 22px calc(22px + var(--safeB));animation:sheetUp .3s cubic-bezier(.2,.8,.2,1) both;max-height:88vh;overflow-y:auto;backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);box-shadow:0 -10px 40px rgba(0,0,0,.45);}
+  #modal.show{position:fixed;inset:0;z-index:80;display:flex;align-items:flex-end;justify-content:center;background:rgba(3,7,15,0);}
+  .sheet{width:100%;max-width:520px;background:rgba(18,28,46,.82);border:1px solid var(--glassB);border-bottom:none;border-radius:30px 30px 0 0;padding:22px 22px calc(22px + var(--safeB));max-height:88vh;will-change:transform;overflow-y:auto;backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);box-shadow:0 -10px 40px rgba(0,0,0,.45);}
   .sheet h3{font-weight:800;font-size:18.5px;}
   .mfield{display:flex;flex-direction:column;gap:6px;}
   .mfield label{font-size:12.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;}
@@ -131,6 +131,36 @@
   #toast{position:fixed;left:0;right:0;bottom:calc(var(--nav) + var(--safeB) + 30px);display:flex;justify-content:center;z-index:90;}
   #toast .inner{padding:11px 19px;border-radius:999px;background:var(--green);color:#04130c;font-weight:600;font-size:15.5px;box-shadow:0 8px 24px rgba(0,0,0,.35);}
   .hidden{display:none;}
+  /* --- apple-design : réponse immédiate au toucher --- */
+  button{transition:transform .12s ease-out,background-color .18s,color .18s,border-color .18s,opacity .18s;}
+  button:active{transform:scale(.97);}
+  .nav button:active{transform:scale(.92);}
+  .check:active,.sbox:active,.stepper button:active,.iconbtn:active,.li .x:active{transform:scale(.88);}
+  button:disabled:active{transform:none;}
+  .check.pop,.sbox.pop{animation:pop .32s cubic-bezier(.34,1.5,.64,1);}
+  @keyframes pop{0%{transform:scale(.86);}100%{transform:none;}}
+  /* fenêtre du bas : poignée, ressort piloté en JS */
+  .grab{touch-action:none;margin:-22px -22px 8px;padding:10px 0 14px;display:flex;justify-content:center;cursor:grab;}
+  .grab i{display:block;width:38px;height:5px;border-radius:3px;background:rgba(255,255,255,.28);}
+  /* toast et minuteur : entrent et sortent par le même chemin */
+  #toast .inner,.pill .inner{transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .25s;}
+  #toast.off .inner,.pill.off .inner{transform:translateY(24px) scale(.96);opacity:0;}
+  #toast .inner{display:flex;align-items:center;gap:14px;}
+  #toast .undo{color:#04130c;font-weight:800;text-decoration:underline;text-underline-offset:2px;}
+  /* accessibilité : réglages iPhone */
+  @media (prefers-reduced-motion: reduce){
+    .fade,.check.pop,.sbox.pop,.pill .inner.done{animation:none !important;}
+    button,#toast .inner,.pill .inner{transition:opacity .2s !important;}
+    button:active{transform:none;}
+    #toast.off .inner,.pill.off .inner{transform:none;}
+  }
+  @media (prefers-reduced-transparency: reduce){
+    .nav,.shead,.finish,.sheet,.pill .inner{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;}
+    .nav{background:#121d31;}.shead,.finish{background:#0B1220;}.sheet{background:#141f33;}
+  }
+  @media (prefers-contrast: more){
+    :root{--glassB:rgba(255,255,255,.36);--line:rgba(255,255,255,.28);--mut:#C6CDDB;}
+  }
   .caveat{font-size:12.5px;color:var(--mut);line-height:1.6;margin-top:20px;padding:15px;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:14px;}
 </style>
 </head>
@@ -226,14 +256,15 @@ const FOOD_DEFAULTS=[
   {id:"taboule",name:"Taboulé",unit:"200 gr",kcal:320,p:6,c:44,f:14}];
 const FOOD_SEED_VERSION=4;
 const SUPP=[
-  {g:"Matin · à jeun",items:[{id:"levo",n:"Médicament du matin",note:"30 min avant le petit-déjeuner. Loin du café, du calcium et du magnésium — ils bloquent l'absorption."}]},
-  {g:"Au repas · matin ou midi",items:[
-    {id:"multi",n:"Multivitamines Nutripure",note:"Pendant un repas. Contient de la biotine → l'arrêter 3–4 jours avant une prise de sang santé (elle fausse la dosage)."},
-    {id:"o3",n:"Oméga-3 Nutripure",note:"Au cours d'un repas."},
-    {id:"d3",n:"Vitamine D3 + K2 (MK-7) Nutripure",note:"Au cours d'un repas contenant un peu de gras."}]},
-  {g:"Tous les jours",items:[{id:"crea",n:"Créatine 5 g (Creapure)",note:"Timing libre. À prendre aussi les jours sans entraînement."}]},
-  {g:"Jour d'entraînement · pré-séance",items:[{id:"pump",n:"Animal Pump",note:"20–30 min avant la séance. Jours de sport uniquement.",train:true}]},
-  {g:"Soir",items:[{id:"mag",n:"Magnésium bisglycinate Nutripure",note:"Le soir. Au moins 4 h après le médicament du matin. Favorise le sommeil."}]}];
+  {g:"Matin · à jeun",items:[{id:"levo",n:"Médicament du matin",note:"30 min avant le petit-déjeuner. Loin du café, du calcium et du magnésium : ils bloquent l'absorption."}]},
+  {g:"Matin · avec le petit-déjeuner",items:[
+    {id:"multi",n:"Multivitamines Nutripure · 2 gélules",note:"Base quotidienne : zinc, sélénium, D3 1000 UI inclus. Contient de la biotine : l'arrêter 3 à 4 jours avant une prise de sang santé (elle fausse la dosage)."},
+    {id:"d3",n:"Vitamine D3 5000 UI Aavalabs · 1 jour sur 2",note:"Un jour sur deux uniquement : total visé ~3000 UI/j avec le multi. À signaler à l'médecin au prochain bilan."},
+    {id:"o3",n:"Oméga-3 Nutripure",note:"Avec un repas gras. Priorité santé (anti-inflammatoire)."}]},
+  {g:"Tous les jours",items:[{id:"crea",n:"Créatine Creapure · 7 gélules",note:"≈ 4,8 g de créatine pure. Tous les jours, même sans séance. Timing libre."}]},
+  {g:"Jour d'entraînement · pré-séance",items:[{id:"pump",n:"Animal Pump",note:"20 à 30 min avant la séance. Jamais les jours off.",train:true}]},
+  {g:"Jour d'entraînement · post-séance",items:[{id:"whey",n:"Whey Isolate ON · 30 à 40 g",note:"Dans les 30 min après la séance. Jours d'entraînement uniquement.",train:true}]},
+  {g:"Soir · avant le coucher",items:[{id:"mag",n:"Magnésium bisglycinate Nutripure",note:"30 min après le skyr du soir (le calcium gêne son absorption). Au moins 4 h après le médicament du matin. Récupération et sommeil."}]}];
 const SUPP_TOTAL=SUPP.reduce((t,g)=>t+g.items.length,0);
 /* ===== Mesures defaults ===== */
 const MEASURE_DEFAULTS=[
@@ -248,7 +279,9 @@ const KL="forge_logs",KD="forge_deload",KA="forge_active",KT="forge_nutri_target
 const load=(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}};
 const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
 const normName=s=>String(s||"").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,"").replace(/\s+/g," ").trim();
-let logs=load(KL,[]),deload=load(KD,0),targets=load(KT,{...TARGET_DEFAULT}),nutriLog=load(KN,{});
+let logs=load(KL,[]),deload=load(KD,0);
+{const keep=[];let shift=0;logs.forEach((l,i)=>{if(l.exercises&&l.exercises.length)keep.push(l);else if(i<deload)shift++;});if(keep.length!==logs.length){logs=keep;deload=Math.max(0,deload-shift);save(KL,logs);save(KD,deload);}}
+let targets=load(KT,{...TARGET_DEFAULT}),nutriLog=load(KN,{});
 let foods=load(KF,null),foodSeed=load(KSV,foods?1:0);
 if(!foods){foods=FOOD_DEFAULTS.map(f=>({...f}));save(KF,foods);save(KSV,FOOD_SEED_VERSION);}
 else if(foodSeed<FOOD_SEED_VERSION){const haveId=new Set(foods.map(f=>f.id)),haveName=new Set(foods.map(f=>normName(f.name)));FOOD_DEFAULTS.forEach(d=>{if(!haveId.has(d.id)&&!haveName.has(normName(d.name)))foods.push({...d});});save(KF,foods);save(KSV,FOOD_SEED_VERSION);}
@@ -429,8 +462,42 @@ function measureDetail(){
 }
 /* ===== MODALS ===== */
 const modalEl=document.getElementById("modal");
-function openModal(html){const open=modalEl.className==="show",prev=open?modalEl.querySelector(".sheet"):null,top=prev?prev.scrollTop:0;modalEl.className="show";modalEl.innerHTML='<div class="sheet'+(open?" still":"")+'" data-stop>'+html+'</div>';if(open&&S.keepSheetScroll){modalEl.querySelector(".sheet").scrollTop=top;}S.keepSheetScroll=false;}
-function closeModal(){modalEl.className="";modalEl.innerHTML="";}
+/* Ressort (apple-design) : damping 1 = sans rebond ; response = vitesse en s. Part de la valeur courante, hérite de la vitesse. */
+const RM=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
+function spring(from,to,v0,opt,onUpdate,onDone){
+  if(RM){onUpdate(to);onDone&&onDone();return()=>{};}
+  const d=opt.damping,r=opt.response,k=Math.pow(2*Math.PI/r,2),c=4*Math.PI*d/r;let x=from,v=v0||0,last=null,id=0,dead=false;
+  const step=now=>{if(dead)return;const dt=last==null?1/60:Math.min(.034,(now-last)/1000);last=now;
+    for(let i=0;i<4;i++){const h=dt/4,a=-k*(x-to)-c*v;v+=a*h;x+=v*h;}
+    if(Math.abs(x-to)<.4&&Math.abs(v)<8){onUpdate(to);onDone&&onDone();return;}
+    onUpdate(x);id=requestAnimationFrame(step);};
+  id=requestAnimationFrame(step);return()=>{dead=true;cancelAnimationFrame(id);};
+}
+const SHEET_IN={damping:1,response:.38},SHEET_FLING={damping:.82,response:.32};
+let sheetY=0,sheetStop=null,sheetClosing=false;
+const sheetH=()=>{const sh=modalEl.querySelector(".sheet");return sh?sh.offsetHeight||window.innerHeight*.6:window.innerHeight*.6;};
+function setSheetY(y){sheetY=y;const sh=modalEl.querySelector(".sheet");if(sh)sh.style.transform="translate3d(0,"+y.toFixed(2)+"px,0)";const p=Math.max(0,Math.min(1,1-y/sheetH()));modalEl.style.backgroundColor="rgba(3,7,15,"+(.55*p).toFixed(3)+")";}
+function moveSheet(to,v,opt,done){if(sheetStop)sheetStop();sheetStop=spring(sheetY,to,v,opt,setSheetY,()=>{sheetStop=null;done&&done();});}
+function openModal(html){
+  if(sheetClosing){if(sheetStop)sheetStop();sheetClosing=false;modalEl.className="";}const open=modalEl.className==="show",prev=open?modalEl.querySelector(".sheet"):null,top=prev?prev.scrollTop:0;modalEl.className="show";modalEl.style.pointerEvents="";modalEl.innerHTML='<div class="sheet'+(open?" still":"")+'" data-stop><div class="grab" aria-hidden="true"><i></i></div>'+html+'</div>';if(open&&S.keepSheetScroll){modalEl.querySelector(".sheet").scrollTop=top;}S.keepSheetScroll=false;
+  if(open)setSheetY(sheetY);else{setSheetY(sheetH());moveSheet(0,0,SHEET_IN);}}
+function closeModal(v){
+  if(modalEl.className!=="show"||sheetClosing)return;sheetClosing=true;modalEl.style.pointerEvents="none";
+  moveSheet(sheetH()+20,v||0,v?SHEET_FLING:SHEET_IN,()=>{sheetClosing=false;modalEl.className="";modalEl.innerHTML="";modalEl.style.pointerEvents="";modalEl.style.backgroundColor="";sheetY=0;});
+}
+/* Glisser la poignée : suivi 1:1, élastique vers le haut, projection de l'élan au lâcher */
+const rubber=(o,dim)=>(o*dim*.55)/(dim+.55*Math.abs(o));
+const project=v=>(v/1000)*.998/(1-.998);
+let drag=null,justDragged=false;
+modalEl.addEventListener("pointerdown",e=>{const g=e.target.closest(".grab");if(!g||sheetClosing)return;if(sheetStop){sheetStop();sheetStop=null;}
+  drag={y0:e.clientY-sheetY,hist:[[e.timeStamp,e.clientY]],moved:false};g.setPointerCapture&&g.setPointerCapture(e.pointerId);});
+modalEl.addEventListener("pointermove",e=>{if(!drag)return;const raw=e.clientY-drag.y0;if(Math.abs(raw-sheetY)>2)drag.moved=true;
+  setSheetY(raw>=0?raw:rubber(raw,sheetH()));drag.hist.push([e.timeStamp,e.clientY]);if(drag.hist.length>6)drag.hist.shift();});
+const endDrag=()=>{if(!drag)return;const h=drag.hist,a=h[0],b=h[h.length-1],dt=(b[0]-a[0])/1000,v=dt>0?(b[1]-a[1])/dt:0;const moved=drag.moved;drag=null;
+  if(moved){justDragged=true;setTimeout(()=>justDragged=false,60);}
+  if(sheetY+project(v)>sheetH()*.4)closeModal(v);else moveSheet(0,v,SHEET_FLING);};
+modalEl.addEventListener("pointerup",endDrag);modalEl.addEventListener("pointercancel",endDrag);
+modalEl.addEventListener("click",e=>{if(justDragged){e.stopPropagation();e.preventDefault();}},true);
 function modalPicker(){
   if(S.pickFood){
     const f=foods.find(x=>x.id===S.pickFood),q=S.pickQty;
@@ -481,10 +548,13 @@ function beep(){try{const ac=restAudio;if(!ac)return;if(ac.state==="suspended")a
 function restRemaining(){return Math.max(0,Math.round((S.restEnd-Date.now())/1000));}
 function startRest(sec){unlockAudio();S.restEnd=Date.now()+sec*1000;S.restDone=false;showPill();if(S.restTimer)clearInterval(S.restTimer);S.restTimer=setInterval(tickRest,1000);}
 function tickRest(){if(S.restEnd==null)return;if(Date.now()>=S.restEnd){if(S.restTimer){clearInterval(S.restTimer);S.restTimer=null;}if(!S.restDone){S.restDone=true;beep();try{navigator.vibrate&&navigator.vibrate([200,100,200,100,200]);}catch(e){}}showPill();}else showPill();}
-function stopRest(){if(S.restTimer)clearInterval(S.restTimer);S.restTimer=null;S.restEnd=null;S.restDone=false;pill.classList.add("hidden");}
-function showPill(){const inSession=(S.tab==="train"&&S.trainView==="session");const bottom=(inSession?100:104)+parseInt(C("--safeB")||0);pill.style.bottom=bottom+"px";if(S.restDone){pill.innerHTML='<div class="inner done">'+I.check(C("--green"))+'<span class="t">Repos terminé</span><button class="add" data-act="rest-close">OK</button></div>';}else{pill.innerHTML='<div class="inner">'+I.timer(C("--gold"))+'<span class="t">'+mmss(restRemaining())+'</span><button class="add" data-act="rest-add">+30 s</button><button data-act="rest-close">'+I.x(C("--mut"))+'</button></div>';}pill.classList.remove("hidden");}
+let pillT=null;
+function stopRest(){if(S.restTimer)clearInterval(S.restTimer);S.restTimer=null;S.restEnd=null;S.restDone=false;pill.classList.add("off");clearTimeout(pillT);pillT=setTimeout(()=>{if(S.restEnd==null)pill.classList.add("hidden");},320);}
+function showPill(){const inSession=(S.tab==="train"&&S.trainView==="session");const bottom=(inSession?100:104)+parseInt(C("--safeB")||0);pill.style.bottom=bottom+"px";if(S.restDone){pill.innerHTML='<div class="inner done">'+I.check(C("--green"))+'<span class="t">Repos terminé</span><button class="add" data-act="rest-close">OK</button></div>';}else{pill.innerHTML='<div class="inner">'+I.timer(C("--gold"))+'<span class="t">'+mmss(restRemaining())+'</span><button class="add" data-act="rest-add">+30 s</button><button data-act="rest-close">'+I.x(C("--mut"))+'</button></div>';}clearTimeout(pillT);if(pill.classList.contains("hidden")){pill.classList.remove("hidden");pill.classList.add("off");void pill.offsetWidth;}pill.classList.remove("off");}
 let toastT=null;
-function toast(m){const t=document.getElementById("toast");t.innerHTML='<div class="inner">'+m+'</div>';t.classList.remove("hidden");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.add("hidden"),2200);}
+let toastUndo=null;
+function toast(m,undo){const t=document.getElementById("toast");toastUndo=undo||null;t.innerHTML='<div class="inner">'+m+(undo?'<button class="undo" data-act="undo">Annuler</button>':"")+'</div>';t.classList.remove("hidden");t.classList.add("off");void t.offsetWidth;t.classList.remove("off");clearTimeout(toastT);toastT=setTimeout(()=>{t.classList.add("off");toastT=setTimeout(()=>{t.classList.add("hidden");toastUndo=null;},320);},undo?4000:2200);}
+document.getElementById("toast").addEventListener("click",e=>{if(e.target.closest("[data-act=undo]")&&toastUndo){const u=toastUndo;toastUndo=null;u();const t=document.getElementById("toast");clearTimeout(toastT);t.classList.add("off");toastT=setTimeout(()=>t.classList.add("hidden"),320);}});
 /* ===== backup (export / import JSON) ===== */
 const BACKUP_KEYS=[KL,KD,KA,KT,KN,KF,KSU,KM,KSV];
 function exportData(){
@@ -535,7 +605,7 @@ app.addEventListener("click",e=>{
   if(a==="open-train"){S.detail=logs.find(l=>l.id==b.dataset.id);S.trainView="detail";render();return;}
   if(a==="note"){const n=document.getElementById("note-"+b.dataset.ex);if(n)n.classList.toggle("hidden");return;}
   if(a==="rest"){startRest(+b.dataset.sec);return;}
-  if(a==="toggle"){const ei=+b.dataset.ex,si=+b.dataset.set,row=S.active.sets[ei][si];row.done=!row.done;save(KA,S.active);b.classList.toggle("done",row.done);b.innerHTML=I.check(row.done?"#04130c":C("--mut"));updateProgress();return;}
+  if(a==="toggle"){const ei=+b.dataset.ex,si=+b.dataset.set,row=S.active.sets[ei][si];row.done=!row.done;save(KA,S.active);b.classList.toggle("done",row.done);b.classList.toggle("pop",row.done);b.innerHTML=I.check(row.done?"#04130c":C("--mut"));updateProgress();return;}
   if(a==="nsub"){S.nutriSub=b.dataset.sub;S.foodsOpen=false;render();return;}
   if(a==="ndate"){const ni=addISO(S.nutriDate,+b.dataset.dir);if(ni<=isoToday())S.nutriDate=ni;render();return;}
   if(a==="open-target"){modalTarget();return;}
@@ -545,7 +615,7 @@ app.addEventListener("click",e=>{
   if(a==="open-addfood"){modalAddFood(null);return;}
   if(a==="edit-food"){modalAddFood(b.dataset.id);return;}
   if(a==="del-food"){if(confirm("Supprimer cet aliment de ta bibliothèque ?")){foods=foods.filter(x=>x.id!==b.dataset.id);save(KF,foods);render();}return;}
-  if(a==="del-log"){const arr=[...dayEntries()];arr.splice(+b.dataset.i,1);nutriLog[S.nutriDate]=arr;save(KN,nutriLog);render();return;}
+  if(a==="del-log"){const day=S.nutriDate,before=[...dayEntries()],arr=[...before],gone=arr.splice(+b.dataset.i,1)[0];nutriLog[day]=arr;save(KN,nutriLog);render();toast(esc(gone.name).slice(0,28)+" retiré",()=>{nutriLog[day]=before;save(KN,nutriLog);render();});return;}
   if(a==="supp"){const st=load(KSU,{date:"",ids:[]});let ids=(st.date===isoToday())?st.ids.slice():[];const id=b.dataset.id,i=ids.indexOf(id);if(i>=0)ids.splice(i,1);else ids.push(id);save(KSU,{date:isoToday(),ids});render();return;}
   if(a==="supp-note"){const n=document.getElementById("snote-"+b.dataset.id);if(n)n.classList.toggle("hidden");return;}
   if(a==="open-metric"){S.measureSel=b.dataset.id;S.measureView="detail";render();return;}
@@ -576,6 +646,8 @@ modalEl.addEventListener("click",e=>{
 });
 pill.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;if(a==="rest-add"){if(S.restEnd==null)return;S.restEnd+=30000;if(S.restDone){S.restDone=false;if(!S.restTimer)S.restTimer=setInterval(tickRest,1000);}showPill();}else if(a==="rest-close")stopRest();});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.restEnd!=null)tickRest();});
+document.addEventListener("touchstart",()=>{},{passive:true});
+document.addEventListener("animationend",e=>{if(e.target.classList&&e.target.classList.contains("pop"))e.target.classList.remove("pop");});
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}
 render();
 </script>
