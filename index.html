@@ -226,7 +226,7 @@ Object.assign(PROGRAM,{
 });
 const ORDER=["FA","FB"],LEGACY=["A","B","C"];
 const chipOf=id=>(PROGRAM[id]&&PROGRAM[id].chip)||id;
-const APP_VERSION="v12";
+const APP_VERSION="v13";
 /* ===== Nutrition defaults ===== */
 const TARGET_DEFAULT={kcal:2500,protein:190};
 const FOOD_DEFAULTS=[
@@ -342,7 +342,30 @@ function suggest(ex,name){
   if(minR>ex.hi+3){let nw=down(Math.min(W*(1+maxR/30)/(1+ex.hi/30),W*1.25));if(nw<=W)nw=W+inc;return{w:nw,reps:ex.lo,up:true,why:"Recalé : "+fmtW(W)+" kg × "+maxR+" était trop léger pour "+ex.r+" reps"};}
   if(minR>=ex.hi)return{w:W+inc,reps:ex.lo,up:true,why:"+"+fmtW(inc)+" kg : "+ex.hi+" reps atteintes sur chaque série"};
   if(maxR<ex.lo)return{w:Math.max(0,W-inc),reps:ex.lo,down:true,why:"−"+fmtW(inc)+" kg : moins de "+ex.lo+" reps la dernière fois"};
+  const pl=plateau(name,W);if(pl)return{w:Math.max(inc,down(W*.9)),reps:ex.hi,down:true,why:"Plateau : 3 séances à "+fmtW(W)+" kg sans progrès. −10 % pour repartir et viser "+ex.hi+" reps"};
   const t=Math.min(ex.hi,minR+1);return{w:W,reps:t,why:"Même charge : vise "+t+" reps sur chaque série"};
+}
+/* 3 dernières séances FA/FB sur cet exercice, même charge max, reps minimales qui ne montent pas */
+function plateau(name,W){const h=[];for(let i=logs.length-1;i>=0&&h.length<3;i--){if(!ORDER.includes(logs[i].sessionId))continue;const e=logs[i].exercises.find(x=>x.n===name);if(!e)continue;const ws=e.sets.filter(x=>!x.warm);if(ws.length)h.push(ws);}
+  if(h.length<3)return false;const top=ws=>Math.max(...ws.map(x=>x.weight)),minAt=ws=>{const t=top(ws);return Math.min(...ws.filter(x=>x.weight===t).map(x=>x.reps));};
+  return h.every(ws=>top(ws)===W)&&minAt(h[0])<=minAt(h[2]);}
+/* Pendant la séance : reps nettement au-dessus de la fourchette → palier au-dessus pour les séries restantes ; sous la fourchette → palier en dessous. */
+function adaptAfterSet(ei,si){
+  const ex=PROGRAM[S.active.sessionId].ex[ei];if(!ex.lo)return;const rows=S.active.sets[ei],row=rows[si],r=parseInt(row.reps),w=num(row.weight),inc=ex.inc||2.5;
+  if(!(w>0)||isNaN(r))return;let nw=null,msg="";
+  if(r>=ex.hi+2){nw=w+inc;msg="Trop facile ("+r+" reps)";}else if(r<ex.lo){nw=Math.max(0,w-inc);msg="Trop lourd ("+r+" reps)";}
+  if(nw===null)return;const next=rows.map((x,i)=>i>si&&!x.warm&&!x.done&&num(x.weight)===w?i:-1).filter(i=>i>=0);if(!next.length)return;
+  next.forEach(i=>{rows[i].weight=String(nw);const inp=document.querySelector('input[data-ex="'+ei+'"][data-set="'+i+'"][data-field="weight"]');if(inp)inp.value=rows[i].weight;});save(KA,S.active);
+  toast(msg+" : séries suivantes à "+fmtW(nw)+" kg",()=>{next.forEach(i=>{rows[i].weight=String(w);const inp=document.querySelector('input[data-ex="'+ei+'"][data-set="'+i+'"][data-field="weight"]');if(inp)inp.value=rows[i].weight;});save(KA,S.active);});
+}
+/* Fin de séance : ce que l'app prévoit pour la prochaine fois */
+function modalNextPlan(entry){
+  const s=PROGRAM[entry.sessionId];if(!s||!entry.exercises.length)return;
+  const rowsH=entry.exercises.map(e=>{const ex=s.ex.find(x=>x.n===e.n)||s.ex[entry.exercises.indexOf(e)]||{};if(!ex.lo)return"";const sg=suggest(ex,e.n);
+    const col=sg.up?"var(--green)":sg.down?"var(--red)":"var(--mut)",arrow=sg.up?"↑":sg.down?"↓":"=";
+    return '<div class="li" style="align-items:flex-start"><div style="min-width:0;flex:1"><p class="b6 sm">'+esc(e.n)+'</p><p class="mut xs" style="margin-top:3px;line-height:1.45">'+esc(sg.why)+'</p></div><div style="text-align:right;margin-left:12px;flex:none"><b class="tab sm" style="color:'+col+'">'+arrow+' '+(sg.w!==""?fmtW(sg.w)+" kg":"—")+'</b><p class="mut xs">× '+(sg.reps||"")+'</p></div></div>';}).join("");
+  if(!rowsH)return;
+  openModal('<div class="row between" style="margin-bottom:6px"><h3>Prochaine fois</h3><button data-act="modal-close">'+I.x(C("--mut"))+'</button></div><p class="mut xs" style="margin-bottom:14px">Calculé sur cette séance. Ces charges seront pré-remplies la prochaine fois.</p><div class="stack">'+rowsH+'</div><div style="margin-top:16px"><button class="primary" data-act="modal-close">OK</button></div>');
 }
 const fmtSets=sets=>sets.map(s=>String(s.weight).replace(".",",")+" kg × "+s.reps).join("  ·  ");
 function freqLabel(f){return f===7?"Hebdomadaire":f===14?"Tous les 15 jours":f===30?"Mensuel":"Tous les "+f+" jours";}
@@ -597,7 +620,7 @@ function finishSession(){
   const volume=exercises.reduce((t,e)=>t+e.sets.reduce((a,x)=>a+(x.warm?0:x.weight*x.reps),0),0);
   const minutes=Math.max(1,Math.round((Date.now()-new Date(S.active.startedAt).getTime())/60000));
   logs.push({id:Date.now(),date:new Date().toISOString(),sessionId:S.active.sessionId,exercises,volume,minutes});save(KL,logs);
-  stopRest();S.active=null;save(KA,null);S.trainView="home";render();toast("Séance enregistrée ✓ · "+minutes+" min");
+  stopRest();S.active=null;save(KA,null);S.trainView="home";render();toast("Séance enregistrée ✓ · "+minutes+" min");modalNextPlan(logs[logs.length-1]);
 }
 function addLogged(food,qty){
   const e={name:food.name,qty,kcal:r1(food.kcal*qty),p:r1(food.p*qty),c:r1(food.c*qty),f:r1(food.f*qty)};
@@ -673,6 +696,7 @@ app.addEventListener("click",e=>{
   if(a==="swap"){modalSwap(+b.dataset.ex);return;}
   if(a==="toggle"){const ei=+b.dataset.ex,si=+b.dataset.set,row=S.active.sets[ei][si];row.done=!row.done;
     if(row.done&&row.reps===""){const pex=PROGRAM[S.active.sessionId].ex[ei],sg=suggest(pex,(S.active.names||[])[ei]||pex.n);if(sg.reps!==""){row.reps=String(sg.reps);const inp=document.querySelector('input[data-ex="'+ei+'"][data-set="'+si+'"][data-field="reps"]');if(inp)inp.value=row.reps;}}
+    if(row.done&&!row.warm)adaptAfterSet(ei,si);
     if(row.done){const exs=PROGRAM[S.active.sessionId].ex,pex=exs[ei],nx=exs[ei+1];if(!(pex.pair&&nx&&nx.pair===pex.pair))startRest(parseRest(pex.rest));}save(KA,S.active);b.classList.toggle("done",row.done);b.classList.toggle("pop",row.done);b.innerHTML=I.check(row.done?"#04130c":C("--mut"));updateProgress();return;}
   if(a==="nsub"){S.nutriSub=b.dataset.sub;S.foodsOpen=false;render();return;}
   if(a==="ndate"){const ni=addISO(S.nutriDate,+b.dataset.dir);if(ni<=isoToday())S.nutriDate=ni;render();return;}
