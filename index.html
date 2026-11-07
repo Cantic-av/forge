@@ -226,7 +226,7 @@ Object.assign(PROGRAM,{
 });
 const ORDER=["FA","FB"],LEGACY=["A","B","C"];
 const chipOf=id=>(PROGRAM[id]&&PROGRAM[id].chip)||id;
-const APP_VERSION="v11";
+const APP_VERSION="v12";
 /* ===== Nutrition defaults ===== */
 const TARGET_DEFAULT={kcal:2500,protein:190};
 const FOOD_DEFAULTS=[
@@ -430,7 +430,7 @@ function viewSession(){
   const exHtml=s.ex.map((ex,ei)=>{
     const name=names[ei],sg=suggest(ex,name),prev=lastPerf(name);let n=0;
     const rows=S.active.sets[ei].map((row,si)=>{const lbl=row.warm?'<span class="xs" style="width:18px;color:var(--steel)">É</span>':'<span class="mut xs" style="width:18px">'+(++n)+'</span>';
-      return '<div class="setrow'+(row.warm?' warm':'')+'">'+lbl+'<div class="field"><input class="tab" inputmode="decimal" data-ex="'+ei+'" data-set="'+si+'" data-field="weight" value="'+esc(row.weight)+'" placeholder="—"><span class="mut xs">kg</span></div><span class="mut xs">×</span><div class="field"><input class="tab" inputmode="numeric" data-ex="'+ei+'" data-set="'+si+'" data-field="reps" value="'+esc(row.reps)+'" placeholder="'+(row.warm?"—":esc(sg.reps||"—"))+'"><span class="mut xs">reps</span></div>'+
+      return '<div class="setrow'+(row.warm?' warm':'')+'">'+lbl+'<div class="field"><input class="tab" inputmode="decimal" data-ex="'+ei+'" data-set="'+si+'" data-field="weight" value="'+esc(row.weight)+'" placeholder="—"><span class="mut xs">kg</span></div><span class="mut xs">×</span><div class="field"><input class="tab" inputmode="numeric" data-ex="'+ei+'" data-set="'+si+'" data-field="reps" value="'+esc(row.reps)+'" placeholder="'+(row.warm?"10":esc(sg.reps||"—"))+'"><span class="mut xs">reps</span></div>'+
         (row.warm?'<button class="iconbtn" style="margin-left:auto;width:44px" data-act="del-warm" data-ex="'+ei+'" data-set="'+si+'">'+I.x(C("--mut"),16)+'</button>':'<button class="check '+(row.done?"done":"")+'" data-act="toggle" data-ex="'+ei+'" data-set="'+si+'">'+I.check(row.done?"#04130c":C("--mut"))+'</button>')+'</div>';}).join("");
     const head=ex.pair&&ex.pair!==lastPair?'<p class="pairlbl">'+I.rotate(C("--steel"))+esc(ex.pair)+'</p>':"";lastPair=ex.pair||null;
     const swap=ex.alt&&ex.alt.length?'<button class="restbtn" style="margin-left:0" data-act="swap" data-ex="'+ei+'">Machine prise ?</button>':"";
@@ -584,7 +584,9 @@ function modalAddMetric(){
 /* ===== actions ===== */
 function startSession(id){
   const ex=PROGRAM[id].ex,names=ex.map(e=>e.n);
-  const sets=ex.map(e=>{const sg=suggest(e,e.n),prev=lastPerf(e.n);return Array.from({length:e.s},(_,i)=>({weight:sg.w!==""&&e.lo?String(sg.w):(prev?String((prev[i]||prev[0]).weight):""),reps:"",done:false}));});
+  const warmW=w=>w===""||!(num(w)>0)?"":String(Math.round(num(w)*.6/2.5)*2.5);
+  const sets=ex.map(e=>{const sg=suggest(e,e.n),prev=lastPerf(e.n);const work=Array.from({length:e.s},(_,i)=>({weight:sg.w!==""&&e.lo?String(sg.w):(prev?String((prev[i]||prev[0]).weight):""),reps:"",done:false}));
+    return [{weight:warmW(work[0].weight),reps:"",done:false,warm:true}].concat(work);});
   S.active={sessionId:id,startedAt:new Date().toISOString(),sets,names};save(KA,S.active);S.trainView="session";render();
 }
 function updateProgress(){let total=0,done=0;S.active.sets.forEach(rows=>rows.forEach(r=>{if(r.warm)return;total++;if(r.done)done++;}));const p=document.getElementById("prog");if(p)p.style.width=(total?Math.round(done/total*100):0)+"%";const c=document.getElementById("count");if(c)c.textContent=done+"/"+total+" séries";}
