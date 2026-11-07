@@ -1,4 +1,4 @@
-const CACHE = "forge-v10";
+const CACHE = "forge-v11";
 const ASSETS = [
   "./", "./index.html", "./manifest.webmanifest",
   "./icon-180.png", "./icon-192.png", "./icon-512.png"
@@ -20,6 +20,19 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
+  // La page elle-même : réseau d'abord (nouvelle version visible dès l'ouverture), cache si hors ligne.
+  if (e.request.mode === "navigate") {
+    e.respondWith(
+      fetch(e.request, { cache: "no-cache" })
+        .then((resp) => {
+          const copy = resp.clone();
+          caches.open(CACHE).then((c) => c.put("./index.html", copy)).catch(() => {});
+          return resp;
+        })
+        .catch(() => caches.match("./index.html").then((r) => r || caches.match("./")))
+    );
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then((hit) => {
       if (hit) return hit;
