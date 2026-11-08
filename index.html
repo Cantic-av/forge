@@ -141,6 +141,15 @@
   #toast .inner{padding:11px 19px;border-radius:999px;background:var(--green);color:#04130c;font-weight:600;font-size:15.5px;box-shadow:0 8px 24px rgba(0,0,0,.35);}
   .hidden{display:none;}
   .remain{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;padding:13px 15px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid var(--line);font-size:14.5px;color:var(--mut);}
+  .macros{display:flex;gap:15px;margin-top:15px;}
+  .macro{flex:1;background:var(--card);border:1px solid var(--glassB);border-radius:20px;padding:14px 16px;box-shadow:0 12px 28px rgba(0,0,0,.2);}
+  .macro .mh{display:flex;justify-content:space-between;align-items:baseline;gap:6px;}
+  .macro .mh b{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;}
+  .macro .mh span{font-size:12.5px;color:var(--mut);font-variant-numeric:tabular-nums;}
+  .mbar{height:8px;border-radius:4px;background:var(--bg2);margin-top:10px;overflow:hidden;}
+  .mbar i{display:block;height:100%;border-radius:4px;transform-origin:left center;transition:transform .45s cubic-bezier(.2,.8,.2,1);}
+  .macro .ml{display:flex;justify-content:space-between;margin-top:8px;font-size:12.5px;color:var(--mut);}
+  .macro .ml .over{color:var(--red);}
   .remain b{color:var(--text);font-weight:800;}.remain .over b{color:var(--red);}
   .primary:disabled,.restbtn:disabled{opacity:.4;}
   input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;}
@@ -174,6 +183,7 @@
     .fade,.check.pop,.sbox.pop,.pill .inner.done,.pill .inner.warn{animation:none !important;}
     button,#toast .inner,.pill .inner{transition:opacity .2s !important;}
     button:active{transform:none;}
+    .mbar i{transition:none;}
     #toast.off .inner,.pill.off .inner{transform:none;}
   }
   @media (prefers-reduced-transparency: reduce){
@@ -239,9 +249,11 @@ Object.assign(PROGRAM,{
 });
 const ORDER=["FA","FB"],LEGACY=["A","B","C"];
 const chipOf=id=>(PROGRAM[id]&&PROGRAM[id].chip)||id;
-const APP_VERSION="v15";
+const APP_VERSION="v16";
 /* ===== Nutrition defaults ===== */
-const TARGET_DEFAULT={kcal:2500,protein:190};
+const TARGET_DEFAULT={kcal:2500,protein:190,carbs:255,fat:80};
+/* Glucides et lipides ajoutés en v16 : les anciens objectifs n'ont que kcal et protéines, on complète sans rien écraser. */
+const withMacros=t=>({...TARGET_DEFAULT,...t,carbs:t&&t.carbs!=null?t.carbs:TARGET_DEFAULT.carbs,fat:t&&t.fat!=null?t.fat:TARGET_DEFAULT.fat});
 const FOOD_DEFAULTS=[
   {id:"whey",name:"Whey isolat ON (1 dose ~30 g)",unit:"dose",kcal:115,p:25,c:1,f:1},
   {id:"poulet",name:"Blanc de poulet",unit:"100 g",kcal:120,p:23,c:0,f:2.5},
@@ -325,7 +337,7 @@ const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
 const normName=s=>String(s||"").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,"").replace(/\s+/g," ").trim();
 let logs=load(KL,[]),deload=load(KD,0);
 {const keep=[];let shift=0;logs.forEach((l,i)=>{if(l.exercises&&l.exercises.length)keep.push(l);else if(i<deload)shift++;});if(keep.length!==logs.length){logs=keep;deload=Math.max(0,deload-shift);save(KL,logs);save(KD,deload);}}
-let targets=load(KT,{...TARGET_DEFAULT}),nutriLog=load(KN,{}),meals=load(KMEAL,[]);
+let targets=withMacros(load(KT,{...TARGET_DEFAULT})),nutriLog=load(KN,{}),meals=load(KMEAL,[]);
 let foods=load(KF,null),foodSeed=load(KSV,foods?1:0);
 if(!foods){foods=FOOD_DEFAULTS.map(f=>({...f}));save(KF,foods);save(KSV,FOOD_SEED_VERSION);}
 else if(foodSeed<FOOD_SEED_VERSION){const haveId=new Set(foods.map(f=>f.id)),haveName=new Set(foods.map(f=>normName(f.name)));FOOD_DEFAULTS.forEach(d=>{if(!haveId.has(d.id)&&!haveName.has(normName(d.name)))foods.push({...d});});save(KF,foods);save(KSV,FOOD_SEED_VERSION);}
@@ -569,12 +581,17 @@ function renderNutri(){
   else body=nutriMeals();
   return '<div class="wrap"><div class="pad top fade"><div class="row between"><h2 class="b8 xl">Nutrition</h2></div>'+seg+body+'</div></div>';
 }
+function macroBar(label,val,target,color){
+  const pct=target?Math.max(0,Math.min(1,val/target)):0,rest=target-val;
+  return '<div class="macro"><div class="mh"><p class="b6 sm">'+label+'</p><span><b>'+Math.round(val)+'</b> / '+target+' g</span></div><div class="mbar"><i style="background:'+color+';transform:scaleX('+pct.toFixed(3)+')"></i></div><div class="ml">'+(rest>=0?'<span>Reste <b class="tab" style="color:var(--text)">'+Math.round(rest)+'</b> g</span>':'<span class="over">+'+Math.round(-rest)+' g</span>')+'<span class="tab">'+Math.round(pct*100)+' %</span></div></div>';
+}
 function nutriMeals(){
   const t=dayTotals(),isToday=S.nutriDate===isoToday(),entries=dayEntries();
   const list=entries.length?entries.map((e,i)=>'<div class="li"><div style="min-width:0"><p class="b6 sm" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(e.name)+(e.qty!==1?' <span class="mut">×'+r1(e.qty)+'</span>':"")+'</p><p class="mut xs" style="margin-top:2px">'+Math.round(e.kcal)+' kcal · P '+r1(e.p)+' · G '+r1(e.c)+' · L '+r1(e.f)+'</p></div><button class="x" data-act="del-log" data-i="'+i+'">'+I.x(C("--mut"),14)+'</button></div>').join(""):'<p class="mut sm" style="text-align:center;padding:22px 0">Aucun aliment pour ce jour.</p>';
   return '<div class="datenav"><button data-act="ndate" data-dir="-1">'+I.cl(C("--mut"))+'</button><span class="b7 sm cap">'+(isToday?"Aujourd'hui":fmtDateLong(S.nutriDate))+'</span><button data-act="ndate" data-dir="1" '+(isToday?"disabled":"")+'>'+I.cr(C("--mut"))+'</button></div>'+
     '<div class="rings"><div class="ringcard"><div class="ringwrap">'+ring(t.p,targets.protein,C("--gold"))+'<div class="ringval"><b>'+Math.round(t.p)+'</b><span>/ '+targets.protein+' g</span></div></div><p class="b6 sm" style="margin-top:8px">Protéines</p></div><div class="ringcard"><div class="ringwrap">'+ring(t.kcal,targets.kcal,C("--steel"))+'<div class="ringval"><b>'+Math.round(t.kcal)+'</b><span>/ '+targets.kcal+'</span></div></div><p class="b6 sm" style="margin-top:8px">Calories</p></div></div>'+
-    '<div class="row between" style="margin-top:10px;padding:0 4px"><span class="mut xs">Glucides '+Math.round(t.c)+' g · Lipides '+Math.round(t.f)+' g</span><button class="linkbtn" data-act="open-target">Objectifs</button></div>'+
+    '<div class="macros">'+macroBar("Glucides",t.c,targets.carbs,C("--goldSoft"))+macroBar("Lipides",t.f,targets.fat,C("--green"))+'</div>'+
+    '<div class="row" style="justify-content:flex-end;margin-top:8px;padding:0 4px"><button class="linkbtn" data-act="open-target">Objectifs</button></div>'+
     (function(){const rk=targets.kcal-t.kcal,rp=targets.protein-t.p;return '<div class="remain">'+(rk>=0?'<span>Reste <b class="tab">'+Math.round(rk).toLocaleString("fr-FR")+'</b> kcal</span>':'<span class="over">Dépassé de <b class="tab">'+Math.round(-rk).toLocaleString("fr-FR")+'</b> kcal</span>')+'<span>'+(rp>0?'Encore <b class="tab">'+Math.round(rp)+'</b> g de protéines':'<b style="color:var(--green)">Protéines atteintes</b>')+'</span></div>';})()+
     '<p class="label" style="margin-top:18px">Journée</p><div class="stack">'+list+'</div>'+
     '<div style="margin-top:12px"><button class="addbtn" data-act="open-picker">'+I.plus(C("--goldSoft"))+' Ajouter un aliment</button></div>'+
@@ -689,7 +706,7 @@ function modalCustom(){
   openModal('<div class="row between" style="margin-bottom:16px"><h3>Saisie libre</h3><button data-act="modal-close">'+I.x(C("--mut"))+'</button></div><div class="stack"><div class="mfield"><label>Nom</label><input id="c-name" placeholder="ex : Repas resto"></div><div class="row" style="gap:10px"><div class="mfield" style="flex:1"><label>Calories</label><input id="c-kcal" inputmode="numeric" placeholder="kcal"></div><div class="mfield" style="flex:1"><label>Protéines (g)</label><input id="c-p" inputmode="decimal" placeholder="g"></div></div><div class="row" style="gap:10px"><div class="mfield" style="flex:1"><label>Glucides (g)</label><input id="c-c" inputmode="decimal" placeholder="g"></div><div class="mfield" style="flex:1"><label>Lipides (g)</label><input id="c-f" inputmode="decimal" placeholder="g"></div></div></div><div style="margin-top:18px"><button class="primary" data-act="add-custom">Ajouter</button></div>');
 }
 function modalTarget(){
-  openModal('<div class="row between" style="margin-bottom:16px"><h3>Objectifs du jour</h3><button data-act="modal-close">'+I.x(C("--mut"))+'</button></div><div class="stack"><div class="mfield"><label>Protéines (g)</label><input id="t-prot" inputmode="numeric" value="'+targets.protein+'"></div><div class="mfield"><label>Calories (kcal)</label><input id="t-kcal" inputmode="numeric" value="'+targets.kcal+'"></div></div><p class="caveat">Estimation de départ : ~2500 kcal (déficit modéré ≈ −350) et ~190 g de protéines pour 103 kg. À ajuster selon ton évolution sur 3–4 semaines. Jamais de déficit agressif avec l\'santé.</p><div style="margin-top:16px"><button class="primary" data-act="save-target">Enregistrer</button></div>');
+  openModal('<div class="row between" style="margin-bottom:16px"><h3>Objectifs du jour</h3><button data-act="modal-close">'+I.x(C("--mut"))+'</button></div><div class="stack"><div class="mfield"><label>Protéines (g)</label><input id="t-prot" inputmode="numeric" value="'+targets.protein+'"></div><div class="mfield"><label>Calories (kcal)</label><input id="t-kcal" inputmode="numeric" value="'+targets.kcal+'"></div><div class="mfield"><label>Glucides (g)</label><input id="t-carb" inputmode="numeric" value="'+targets.carbs+'"></div><div class="mfield"><label>Lipides (g)</label><input id="t-fat" inputmode="numeric" value="'+targets.fat+'"></div></div><p class="caveat">Estimation de départ : ~2500 kcal (déficit modéré ≈ −350) et ~190 g de protéines pour 103 kg. À ajuster selon ton évolution sur 3–4 semaines. Lipides : 80 g, jamais sous 70 g (hormones). Glucides : le reste des calories, soit ~255 g. Jamais de déficit agressif avec l\'santé.</p><div style="margin-top:16px"><button class="primary" data-act="save-target">Enregistrer</button></div>');
 }
 function modalAddFood(edit){
   const f=edit?foods.find(x=>x.id===edit):{name:"",unit:"",kcal:"",p:"",c:"",f:""};
@@ -839,7 +856,7 @@ modalEl.addEventListener("click",e=>{
   if(a==="add-logged"){const f=foods.find(x=>x.id===S.pickFood);addLogged(f,S.pickQty);closeModal();render();toast("Ajouté ✓");return;}
   if(a==="open-custom"){modalCustom();return;}
   if(a==="add-custom"){const name=(document.getElementById("c-name").value||"").trim()||"Aliment";addLogged({name,kcal:num(document.getElementById("c-kcal").value),p:num(document.getElementById("c-p").value),c:num(document.getElementById("c-c").value),f:num(document.getElementById("c-f").value)},1);closeModal();render();toast("Ajouté ✓");return;}
-  if(a==="save-target"){targets={protein:Math.max(0,parseInt(document.getElementById("t-prot").value)||TARGET_DEFAULT.protein),kcal:Math.max(0,parseInt(document.getElementById("t-kcal").value)||TARGET_DEFAULT.kcal)};save(KT,targets);closeModal();render();toast("Objectifs mis à jour");return;}
+  if(a==="save-target"){targets={protein:Math.max(0,parseInt(document.getElementById("t-prot").value)||TARGET_DEFAULT.protein),kcal:Math.max(0,parseInt(document.getElementById("t-kcal").value)||TARGET_DEFAULT.kcal),carbs:Math.max(0,parseInt(document.getElementById("t-carb").value)||TARGET_DEFAULT.carbs),fat:Math.max(0,parseInt(document.getElementById("t-fat").value)||TARGET_DEFAULT.fat)};save(KT,targets);closeModal();render();toast("Objectifs mis à jour");return;}
   if(a==="save-food"){const id=document.getElementById("f-id").value;const obj={name:(document.getElementById("f-name").value||"").trim()||"Aliment",unit:(document.getElementById("f-unit").value||"").trim()||"unité",kcal:num(document.getElementById("f-kcal").value),p:num(document.getElementById("f-p").value),c:num(document.getElementById("f-c").value),f:num(document.getElementById("f-f").value)};if(id){const i=foods.findIndex(x=>x.id===id);if(i>=0)foods[i]={...foods[i],...obj};}else{foods.push({id:"f"+Date.now(),...obj});}save(KF,foods);closeModal();S.foodsOpen=true;render();toast("Aliment enregistré");return;}
   if(a==="save-logm"){const m=measures.find(x=>x.id===S.measureSel),v=num(document.getElementById("m-val").value),d=document.getElementById("m-date").value||isoToday();if(v>0){m.history=(m.history||[]).filter(e=>e.date!==d).concat([{date:d,value:v}]);m.history.sort((x,y)=>x.date<y.date?-1:1);save(KM,measures);closeModal();render();toast("Mesure enregistrée ✓");}else closeModal();return;}
   if(a==="save-metric"){const name=(document.getElementById("nm-name").value||"").trim();if(name){measures.push({id:"m"+Date.now(),name,unit:(document.getElementById("nm-unit").value||"").trim(),freq:parseInt(document.getElementById("nm-freq").value)||14,history:[]});save(KM,measures);}closeModal();render();return;}
