@@ -208,7 +208,7 @@
 /* ===== PROGRAM ===== */
 const PROGRAM={
   A:{id:"A",name:"Haut du corps",tag:"Upper",groups:"Pecs · Dos · Épaules · Bras",ex:[
-    {n:"Développé incliné haltères",s:4,r:"8–10",rest:"90 s",note:"Haltères = trajectoire libre, épaule protégée. Ne descends pas les coudes sous la ligne du torse."},
+    {n:"Développé incliné haltères",s:4,r:"8–10",rest:"90 s",note:"Haltères = trajectoire libre, épaules protégées. Ne descends pas les coudes sous la ligne du torse."},
     {n:"Tirage vertical poitrine",s:4,r:"8–10",rest:"90 s",note:"Prise large. Superset possible avec le développé incliné."},
     {n:"Développé machine convergente",s:3,r:"10–12",rest:"75 s",note:"Machine = sûre pour l'épaule, tu peux pousser près de l'échec."},
     {n:"Rowing buste soutenu",s:3,r:"10–12",rest:"75 s",note:"Buste SOUTENU obligatoire — jamais buste penché barre libre (dos)."},
@@ -220,14 +220,14 @@ const PROGRAM={
     {n:"Hack squat machine",s:3,r:"10–12",rest:"2 min",note:"Remplace le squat barre. Jamais barre libre lourde."},
     {n:"Leg curl (allongé ou assis)",s:4,r:"10–12",rest:"90 s",note:"Ischios sans deadlift ni soulevé roumain — indispensable vu ton dos."},
     {n:"Extension mollets",s:4,r:"12–15",rest:"45 s",note:"Amplitude complète, pause en bas."},
-    {n:"Face pull",s:3,r:"15",rest:"45 s",note:"Santé épaule + arrière d'épaule et trapèzes. À garder à vie."},
+    {n:"Face pull",s:3,r:"15",rest:"45 s",note:"Santé des épaules + arrière d'épaule et trapèzes. À garder à vie."},
     {n:"Relevés de jambes + planche",s:3,r:"12–15",rest:"45 s",note:"Abdos. Pas de crunch lesté lourd ici (dos)."}]},
   C:{id:"C",name:"Full body",tag:"Rappel",groups:"Corps entier + pecs/biceps",ex:[
     {n:"Presse à cuisses",s:3,r:"12",rest:"90 s",note:"Rappel jambes."},
     {n:"Rowing machine assise",s:3,r:"10–12",rest:"75 s",note:"Dos neutre, gainé."},
     {n:"Développé couché machine",s:4,r:"10–12",rest:"75 s",note:"2ᵉ dose pecs — point faible."},
     {n:"Curl incliné haltères",s:4,r:"10–12",rest:"60 s",note:"2ᵉ dose biceps — point faible. Superset possible avec le développé."},
-    {n:"Élévations latérales poulie",s:3,r:"12–15",rest:"45 s",note:"Léger, prudence épaule."},
+    {n:"Élévations latérales poulie",s:3,r:"12–15",rest:"45 s",note:"Léger, prudence sur les épaules."},
     {n:"Crunch + obliques",s:3,r:"15",rest:"45 s",note:"Abdos."}]},
 };
 /* Programme Full body A / B (07/11/2026). Mêmes noms d'exercices que l'ancien programme pour garder l'historique.
@@ -235,7 +235,7 @@ const PROGRAM={
 Object.assign(PROGRAM,{
   FA:{id:"FA",chip:"A",name:"Full body A",tag:"Full",groups:"Jambes · Pecs haut · Dos · Bras · Abdos",ex:[
     {n:"Presse à cuisses",s:3,r:"8–12",lo:8,hi:12,inc:5,rest:"2 min",note:"Dossier collé, lombaires soutenues. Charge de travail dès la 1re série : la montée en charge se note en échauffement.",alt:["Hack squat machine"]},
-    {n:"Développé incliné haltères",s:3,r:"8–12",lo:8,hi:12,inc:2,rest:"2 min",note:"Haltères = trajectoire libre, épaule protégée. Coudes jamais sous la ligne du torse.",alt:["Développé machine convergente"]},
+    {n:"Développé incliné haltères",s:3,r:"8–12",lo:8,hi:12,inc:2,rest:"2 min",note:"Haltères = trajectoire libre, épaules protégées. Coudes jamais sous la ligne du torse.",alt:["Développé machine convergente"]},
     {n:"Tirage vertical poitrine",s:3,r:"8–12",lo:8,hi:12,inc:2.5,rest:"2 min",note:"Prise large, poitrine haute, tire les coudes vers les hanches.",alt:["Rowing machine assise"]},
     {n:"Leg curl (allongé ou assis)",s:3,r:"10–15",lo:10,hi:15,inc:2.5,rest:"90 s",note:"Ischios sans soulevé de terre : indispensable vu ton dos."},
     {n:"Curl à la poulie",s:2,r:"10–15",lo:10,hi:15,inc:2.5,rest:"75 s",pair:"Poulie double · curl puis triceps, 2 tours",note:"Barre droite ou EZ sur la poulie basse. Coudes fixes.",alt:["Curl barre EZ","Curl incliné haltères"]},
@@ -246,13 +246,13 @@ Object.assign(PROGRAM,{
     {n:"Rowing buste soutenu",s:3,r:"8–12",lo:8,hi:12,inc:2.5,rest:"2 min",note:"Buste SOUTENU obligatoire : jamais buste penché barre libre (dos).",alt:["Rowing machine assise"]},
     {n:"Développé couché machine",s:3,r:"8–12",lo:8,hi:12,inc:2.5,rest:"90 s",note:"Machine = sûre pour l'épaule, tu peux pousser à 1 rep de l'échec.",alt:["Développé machine convergente"]},
     {n:"Extension mollets",s:2,r:"10–15",lo:10,hi:15,inc:5,rest:"60 s",note:"Amplitude complète, pause d'une seconde en bas.",alt:["Mollets à la presse"]},
-    {n:"Élévations latérales poulie",s:2,r:"12–20",lo:12,hi:20,inc:2.5,rest:"75 s",pair:"Poulie · élévations puis face pull, 2 tours",note:"Léger, prudence épaule.",alt:["Élévations latérales haltères"]},
-    {n:"Face pull",s:2,r:"15–20",lo:15,hi:20,inc:2.5,rest:"75 s",pair:"Poulie · élévations puis face pull, 2 tours",note:"Santé de l'épaule. Même poste : repos après le face pull."},
+    {n:"Élévations latérales poulie",s:2,r:"12–20",lo:12,hi:20,inc:2.5,rest:"75 s",pair:"Poulie · élévations puis face pull, 2 tours",note:"Léger, prudence sur les épaules.",alt:["Élévations latérales haltères"]},
+    {n:"Face pull",s:2,r:"15–20",lo:15,hi:20,inc:2.5,rest:"75 s",pair:"Poulie · élévations puis face pull, 2 tours",note:"Santé des épaules. Même poste : repos après le face pull."},
     {n:"Relevés de jambes + planche",s:2,r:"10–15",lo:10,hi:15,inc:5,rest:"60 s",note:"Pas de crunch lesté lourd ici (dos)."}]}
 });
 const ORDER=["FA","FB"],LEGACY=["A","B","C"];
 const chipOf=id=>(PROGRAM[id]&&PROGRAM[id].chip)||id;
-const APP_VERSION="v17";
+const APP_VERSION="v18";
 /* ===== Nutrition defaults ===== */
 const TARGET_DEFAULT={kcal:2500,protein:190,carbs:255,fat:80};
 /* Glucides et lipides ajoutés en v16 : les anciens objectifs n'ont que kcal et protéines, on complète sans rien écraser. */
@@ -317,9 +317,9 @@ const FOOD_SEED_VERSION=4;
 const SUPP=[
   {g:"Matin · à jeun",items:[{id:"levo",n:"Médicament du matin",note:"30 min avant le petit-déjeuner. Loin du café, du calcium et du magnésium : ils bloquent l'absorption."}]},
   {g:"Matin · avec le petit-déjeuner",items:[
-    {id:"multi",n:"Multivitamines Nutripure · 2 gélules",note:"Base quotidienne : zinc, sélénium, D3 1000 UI inclus. Contient de la biotine : l'arrêter 3 à 4 jours avant une prise de sang santé (elle fausse la dosage)."},
-    {id:"d3",n:"Vitamine D3 5000 UI Aavalabs · 1 jour sur 2",note:"Un jour sur deux uniquement : total visé ~3000 UI/j avec le multi. À signaler à l'médecin au prochain bilan."},
-    {id:"o3",n:"Oméga-3 Nutripure",note:"Avec un repas gras. Priorité santé (anti-inflammatoire)."}]},
+    {id:"multi",n:"Multivitamines Nutripure · 2 gélules",note:"Base quotidienne : zinc, sélénium, D3 1000 UI inclus. Contient de la biotine : l'arrêter 3 à 4 jours avant une prise de sang (elle fausse certains dosages)."},
+    {id:"d3",n:"Vitamine D3 5000 UI Aavalabs · 1 jour sur 2",note:"Un jour sur deux uniquement : total visé ~3000 UI/j avec le multi. À signaler au médecin au prochain bilan."},
+    {id:"o3",n:"Oméga-3 Nutripure",note:"Avec un repas gras. Anti-inflammatoire."}]},
   {g:"Tous les jours",items:[{id:"crea",n:"Créatine Creapure · 8 gélules",note:"≈ 5,5 g de créatine pure. Tous les jours, même sans séance. Timing libre."}]},
   {g:"Jour d'entraînement · pré-séance",items:[{id:"pump",n:"Animal Pump",note:"20 à 30 min avant la séance. Jamais les jours off.",train:true}]},
   {g:"Jour d'entraînement · post-séance",items:[{id:"whey",n:"Whey Isolate ON · 30 à 40 g",note:"Dans les 30 min après la séance. Jours d'entraînement uniquement.",train:true}]},
@@ -462,7 +462,7 @@ function viewTrainHome(){
     '<div class="row between"><div><div class="brand">'+I.dumbbell(C("--gold"))+'<h1>FORGE</h1></div><p class="mut xs" style="margin-top:5px;letter-spacing:.02em;">Recomposition · Full body A / B</p></div>'+
     '<button class="ghost" data-act="tview" data-v="history">'+I.timer(C("--mut"))+' Historique</button></div>'+
     '<div class="stats">'+stat(I.flame(C("--gold")),logs.filter(realLog).length,"séances")+stat(I.cal(C("--gold")),weekCount(),"cette semaine")+stat(I.rotate(C("--gold")),sinceDeload(),"avant deload")+'</div>'+
-    (due?'<div class="deload">'+I.rotate(C("--goldSoft"))+'<div style="flex:1"><p class="b7 goldS sm">Semaine de deload conseillée</p><p class="mut xs" style="margin-top:4px;line-height:1.5;">~21 séances sans pause de '+DELOAD_GAP+' jours. Charges −40 % ou volume divisé par deux pendant une semaine. Récup obligatoire à l'âge + santé.</p><button class="btn" data-act="deload">Deload effectué</button></div></div>':"")+
+    (due?'<div class="deload">'+I.rotate(C("--goldSoft"))+'<div style="flex:1"><p class="b7 goldS sm">Semaine de deload conseillée</p><p class="mut xs" style="margin-top:4px;line-height:1.5;">~21 séances sans pause de '+DELOAD_GAP+' jours. Charges −40 % ou volume divisé par deux pendant une semaine. Récupération obligatoire.</p><button class="btn" data-act="deload">Deload effectué</button></div></div>':"")+
     weeklyCard()+
     '<p class="label">Prochaine séance suggérée</p>'+scard(PROGRAM[sug],true)+
     '<p class="label">Autre séance</p><div class="stack">'+others.map(id=>scard(PROGRAM[id],false)).join("")+'</div>'+
@@ -611,7 +611,7 @@ function nutriFoods(){
 function nutriSupps(){
   const st=load(KSU,{date:"",ids:[]});const ids=(st.date===isoToday())?st.ids:[];const done=ids.length;
   const groups=SUPP.map(g=>'<p class="label">'+g.g+'</p><div class="stack">'+g.items.map(it=>'<div class="supp"><button class="sbox '+(ids.includes(it.id)?"on":"")+'" data-act="supp" data-id="'+it.id+'">'+I.check(ids.includes(it.id)?"#04130c":"transparent")+'</button><div style="flex:1;min-width:0"><p class="b6 sm">'+esc(it.n)+(it.train?'<span class="train-tag">sport</span>':"")+'</p><button class="linkbtn" style="margin-top:3px" data-act="supp-note" data-id="'+it.id+'">détail</button><p class="note hidden" id="snote-'+it.id+'">'+esc(it.note)+'</p></div></div>').join("")+'</div>').join("");
-  return '<div class="row between" style="margin-top:16px;padding:0 4px"><span class="mut sm">Routine du jour</span><span class="goldS b7 sm tab">'+done+'/'+SUPP_TOTAL+' pris</span></div>'+groups+'<p class="caveat">L\'espacement médicament du matin / minéraux et l\'arrêt de la biotine avant analyse de sang sont à confirmer avec ton pharmacien ou ton médecin. La checklist se remet à zéro chaque jour.</p>';
+  return '<div class="row between" style="margin-top:16px;padding:0 4px"><span class="mut sm">Routine du jour</span><span class="goldS b7 sm tab">'+done+'/'+SUPP_TOTAL+' pris</span></div>'+groups+'<p class="caveat">L\'espacement entre le médicament du matin et les minéraux, et l\'arrêt de la biotine avant une analyse de sang, sont à confirmer avec ton pharmacien ou ton médecin. La checklist se remet à zéro chaque jour.</p>';
 }
 /* ===== MESURES ===== */
 function renderMeasure(){
@@ -621,7 +621,7 @@ function renderMeasure(){
     const valTxt=m.isPhoto?(last?"Dernières : "+fmtDate(last.date):"Jamais"):(last?r1(last.value)+" "+m.unit:"—");
     return '<button class="li" style="text-align:left" data-act="open-metric" data-id="'+m.id+'"><div><p class="b7 sm">'+esc(m.name)+'</p><p class="mut xs" style="margin-top:3px">'+freqLabel(m.freq)+' · '+valTxt+'</p></div><div class="row" style="gap:10px">'+(due?'<span class="badge" style="color:var(--goldSoft);border-color:var(--goldSoft);font-size:11px">À mesurer</span>':'<span class="badge mut" style="font-size:11px">À jour</span>')+I.cr(C("--mut"))+'</div></button>';
   }).join("");
-  return '<div class="wrap"><div class="pad top fade"><h2 class="b8 xl">Mesures</h2><p class="mut xs" style="margin-top:5px">Recomposition : juge la tendance, pas le chiffre du jour.</p><p class="label">Mes mesures</p><div class="stack">'+list+'</div><div style="margin-top:12px"><button class="addbtn" data-act="open-addmetric">'+I.plus(C("--goldSoft"))+' Nouvelle mesure</button></div><p class="caveat">Le poids est volontairement hebdomadaire : avec la créatine et l\'santé, le poids quotidien fluctue trop. Le tour de taille est ton meilleur indicateur de recomposition. Les photos restent dans ton app Photos — l\'app n\'enregistre que la date.</p></div></div>';
+  return '<div class="wrap"><div class="pad top fade"><h2 class="b8 xl">Mesures</h2><p class="mut xs" style="margin-top:5px">Recomposition : juge la tendance, pas le chiffre du jour.</p><p class="label">Mes mesures</p><div class="stack">'+list+'</div><div style="margin-top:12px"><button class="addbtn" data-act="open-addmetric">'+I.plus(C("--goldSoft"))+' Nouvelle mesure</button></div><p class="caveat">Le poids est volontairement hebdomadaire : avec la créatine, le poids quotidien fluctue trop. Le tour de taille est ton meilleur indicateur de recomposition. Les photos restent dans ton app Photos — l\'app n\'enregistre que la date.</p></div></div>';
 }
 function measureDetail(){
   const m=measures.find(x=>x.id===S.measureSel);if(!m){S.measureView="list";return renderMeasure();}
@@ -714,7 +714,7 @@ function modalCustom(){
   openModal('<div class="row between" style="margin-bottom:16px"><h3>Saisie libre</h3><button data-act="modal-close">'+I.x(C("--mut"))+'</button></div><div class="stack"><div class="mfield"><label>Nom</label><input id="c-name" placeholder="ex : Repas resto"></div><div class="row" style="gap:10px"><div class="mfield" style="flex:1"><label>Calories</label><input id="c-kcal" inputmode="numeric" placeholder="kcal"></div><div class="mfield" style="flex:1"><label>Protéines (g)</label><input id="c-p" inputmode="decimal" placeholder="g"></div></div><div class="row" style="gap:10px"><div class="mfield" style="flex:1"><label>Glucides (g)</label><input id="c-c" inputmode="decimal" placeholder="g"></div><div class="mfield" style="flex:1"><label>Lipides (g)</label><input id="c-f" inputmode="decimal" placeholder="g"></div></div></div><div style="margin-top:18px"><button class="primary" data-act="add-custom">Ajouter</button></div>');
 }
 function modalTarget(){
-  openModal('<div class="row between" style="margin-bottom:16px"><h3>Objectifs du jour</h3><button data-act="modal-close">'+I.x(C("--mut"))+'</button></div><div class="stack"><div class="mfield"><label>Protéines (g)</label><input id="t-prot" inputmode="numeric" value="'+targets.protein+'"></div><div class="mfield"><label>Calories (kcal)</label><input id="t-kcal" inputmode="numeric" value="'+targets.kcal+'"></div><div class="mfield"><label>Glucides (g)</label><input id="t-carb" inputmode="numeric" value="'+targets.carbs+'"></div><div class="mfield"><label>Lipides (g)</label><input id="t-fat" inputmode="numeric" value="'+targets.fat+'"></div></div><p class="caveat">Estimation de départ : ~2500 kcal (déficit modéré ≈ −350) et ~190 g de protéines pour 103 kg. À ajuster selon ton évolution sur 3–4 semaines. Lipides : 80 g, jamais sous 70 g (hormones). Glucides : le reste des calories, soit ~255 g. Jamais de déficit agressif avec l\'santé.</p><div style="margin-top:16px"><button class="primary" data-act="save-target">Enregistrer</button></div>');
+  openModal('<div class="row between" style="margin-bottom:16px"><h3>Objectifs du jour</h3><button data-act="modal-close">'+I.x(C("--mut"))+'</button></div><div class="stack"><div class="mfield"><label>Protéines (g)</label><input id="t-prot" inputmode="numeric" value="'+targets.protein+'"></div><div class="mfield"><label>Calories (kcal)</label><input id="t-kcal" inputmode="numeric" value="'+targets.kcal+'"></div><div class="mfield"><label>Glucides (g)</label><input id="t-carb" inputmode="numeric" value="'+targets.carbs+'"></div><div class="mfield"><label>Lipides (g)</label><input id="t-fat" inputmode="numeric" value="'+targets.fat+'"></div></div><p class="caveat">Estimation de départ : ~2500 kcal (déficit modéré ≈ −350) et ~190 g de protéines pour 103 kg. À ajuster selon ton évolution sur 3–4 semaines. Lipides : 80 g, jamais sous 70 g (hormones). Glucides : le reste des calories, soit ~255 g. Jamais de déficit agressif.</p><div style="margin-top:16px"><button class="primary" data-act="save-target">Enregistrer</button></div>');
 }
 function modalAddFood(edit){
   const f=edit?foods.find(x=>x.id===edit):{name:"",unit:"",kcal:"",p:"",c:"",f:""};
